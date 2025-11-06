@@ -1,0 +1,137 @@
+/* --- shopping-list.css --- */
+
+/* Container für die Datumsauswahl */
+.date-selector-container {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: all 0.5s ease;
+    max-height: 500px;
+    overflow: hidden;
+    opacity: 1;
+}
+.date-selector-container.collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    border: none;
+}
+.date-selector-container h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+/* Liste der Datums-Buttons */
+#date-selection-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+.date-select-btn {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    color: #555;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.date-select-btn:hover {
+    background-color: #f0f0f0;
+    border-color: #ccc;
+}
+.date-select-btn.active {
+    background-color: #007aff;
+    color: white;
+    border-color: #007aff;
+    font-weight: 600;
+}
+
+/* "Liste erstellen"-Knopf */
+.generate-list-btn {
+    background-color: #34c759;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1rem;
+    display: block;
+    margin-left: auto;
+    transition: background-color 0.2s;
+}
+.generate-list-btn:hover {
+    background-color: #2a9e48;
+}
+
+/* "Tage ändern"-Knopf */
+.edit-dates-btn {
+    background-color: #f0f0f0;
+    color: #007aff;
+    border: 1px solid #ddd;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+}
+.edit-dates-btn:hover {
+    background-color: #e0e0e0;
+}
+
+/* Ergebnis-Container */
+.results-container {
+    border-top: 1px solid #ddd;
+    padding-top: 1.5rem;
+}
+.results-container h3 {
+    margin-top: 0;
+}
+
+/* Die finale Einkaufsliste (ANGEPASST) */
+#shopping-list-results {
+    list-style: none; /* Wir verwenden eigene Stile */
+    padding-left: 0; /* Kein Einzug mehr */
+    /* column-count: 3; (ENTFERNT - Kategorien sehen in Spalten schlecht aus) */
+}
+
+/* NEU: Kategorie-Überschrift (z.B. "Backzutaten") */
+.shopping-list-category-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #007aff; /* Blau */
+    border-bottom: 2px solid #007aff;
+    padding-bottom: 0.25rem;
+    margin-top: 1.5rem; /* Abstand zwischen Kategorien */
+    margin-bottom: 0.5rem;
+}
+#shopping-list-results h4:first-of-type {
+    margin-top: 0.5rem; /* Weniger Abstand für die erste Kategorie */
+}
+
+
+/* Styling für Zutaten (klickbar & abgehakt) */
+#shopping-list-results li {
+    padding: 0.5rem 0.25rem; /* Mehr vertikaler Abstand */
+    cursor: pointer;
+    transition: color 0.2s, text-decoration 0.2s, opacity 0.2s;
+    border-bottom: 1px solid #f0f0f0; /* Leichte Trennlinie */
+    font-size: 1rem;
+}
+#shopping-list-results li:last-of-type {
+    border-bottom: none;
+}
+#shopping-list-results li.checked-off {
+    text-decoration: line-through;
+    color: #999;
+    opacity: 0.7;
+}

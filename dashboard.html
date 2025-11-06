@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Meine Rezepte</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loader" class="loader-container">
+        <div class="loader"></div>
+        <p>Wir laden deine Kochbücher</p>
+    </div>
+
+    <header class="navbar content-hidden">
+        <div class="navbar-container">
+            <span class="navbar-brand">Flavour Lab</span>
+            <nav class="navbar-tabs">
+                <ul>
+                    <li><a href="dashboard.html" class="active">Kochbücher</a></li>
+                    <li><a href="planner.html">Wochenplaner</a></li>
+                    <li><a href="shopping-list.html">Einkaufsliste</a></li>
+                    <li><a href="account.html">Konto</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="main-content content-hidden">
+        <div class="dashboard-container">
+            
+            <h2 id="dashboard-title">Willkommen zurück!</h2>
+
+            <p id="gallery-message" class="message"></p>
+            <div id="cookbook-gallery">
+                </div>
+        </div>
+    </main>
+
+    <div id="cookbook-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content">
+            <span id="modal-close-btn" class="modal-close">&times;</span>
+            <h3 id="modal-title">Neues Kochbuch erstellen</h3>
+            <div id="new-cookbook-form" class="modal-form">
+                <label for="modal-cookbook-name">Name des Kochbuchs</label>
+                <input type="text" id="modal-cookbook-name" placeholder="z.B. Vegane Rezepte">
+                <label for="modal-cookbook-image">Bild-URL (Optional)</label>
+                <input type="text" id="modal-cookbook-image" placeholder="https://beispiel.com/bild.jpg">
+                <button id="btn-save-cookbook">Speichern</button>
+            </div>
+        </div>
+    </div>
+    
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <script type="module" src="./firebase-config.js"></script>
+    <script type="module" src="./app.js"></script>
+
+</body>
+</html>

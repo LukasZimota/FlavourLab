@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Einkaufsliste - Mein Rezeptbuch</title> 
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loader" class="loader-container">
+        <div class="loader"></div>
+        <p>Lade Firebase...</p>
+    </div>
+
+    <header class="navbar content-hidden">
+        <div class="navbar-container">
+            <span class="navbar-brand">Mein Rezeptbuch</span>
+            <nav class="navbar-tabs">
+                <ul>
+                    <li><a href="dashboard.html">Kochbücher</a></li>
+                    <li><a href="planner.html">Wochenplaner</a></li>
+                    <li><a href="shopping-list.html" class="active">Einkaufsliste</a></li>
+                    <li><a href="account.html">Konto</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content content-hidden">
+        <div class="shopping-list-container" id="shopping-list-main-container">
+            <h2>Einkaufsliste erstellen</h2>
+            
+            <div class="date-selector-container" id="date-selector-container">
+                <h4>1. Tage für den Einkauf auswählen:</h4>
+                <div id="date-selection-list">
+                    </div>
+                <button id="btn-generate-list" class="generate-list-btn">
+                    Zutatenliste erstellen
+                </button>
+            </div>
+
+            <button id="btn-edit-dates" class="edit-dates-btn" style="display: none;">
+                Tage ändern
+            </button>
+
+            <div class="results-container">
+                <h3>Benötigte Zutaten:</h3>
+                <p id="shopping-list-message" class="message"></p>
+                <ul id="shopping-list-results">
+                    </ul>
+            </div>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script> <script type="module" src="./firebase-config.js"></script>
+    <script type="module" src="./shopping-list.js"></script>
+
+</body>
+</html>

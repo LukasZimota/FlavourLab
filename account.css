@@ -1,0 +1,144 @@
+/* --- Kontoseite --- */
+.account-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    max-width: 500px; 
+}
+
+/* Titel (z.B. "Hi, Alexander") */
+#account-title {
+    margin-top: 0;
+    color: #333;
+}
+
+/* --- Menü-Styling --- */
+.account-menu {
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.account-menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background-color: #ffffff;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.account-menu-item:last-child {
+    border-bottom: none;
+}
+.account-menu-item:hover {
+    background-color: #f9f9f9;
+}
+.account-menu-item span:first-child {
+    font-weight: 500;
+}
+.account-arrow {
+    width: 16px;
+    height: 16px;
+    color: #ccc;
+    transition: transform 0.2s ease-out;
+}
+.account-menu-item:hover .account-arrow {
+    transform: translateX(4px);
+}
+
+/* --- Styling für Daten-Anzeige --- */
+.account-data-display {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+.account-data-display h4 {
+    margin-top: 0;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+}
+.account-data-display p {
+    margin-bottom: 0.5rem;
+}
+.account-data-display p strong {
+    color: #555;
+}
+
+/* --- NEU: Styling für Statistik-Anzeige --- */
+.account-stats-display {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+.account-stats-display h4 {
+    margin-top: 0;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+}
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+    padding: 0.75rem 0.25rem;
+    border-bottom: 1px solid #eee;
+}
+.stat-item:last-of-type {
+    border-bottom: none;
+}
+.stat-item span:first-child {
+    color: #555;
+    font-weight: 500;
+}
+.stat-item span:last-child {
+    font-weight: bold;
+    font-size: 1.1rem;
+    color: #007aff;
+}
+/* --- ENDE NEU --- */
+
+
+/* Klasse zum Verstecken/Anzeigen */
+.hidden {
+    display: none;
+}
+
+/* "Zurück"-Knopf */
+.account-data-close-btn {
+    background: none;
+    border: 1px solid #aaa;
+    color: #555;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 1rem;
+    font-weight: 500;
+}
+.account-data-close-btn:hover {
+    background-color: #f0f0f0;
+}
+
+/* Logout-Knopf */
+.logout-button {
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    background-color: #ff3b30;
+    width: 100%;
+    margin-top: 1rem;
+}
+.logout-button:hover {
+    background-color: #c70000;
+}

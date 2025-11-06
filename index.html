@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Meine Rezepte</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="auth.css"> 
+</head>
+<body class="login-page">
+
+    <div class="login-container">
+        <h2>Flavour Lab</h2>
+        
+        <div class="tab-group">
+            <button id="btn-login-tab" class="tab-btn active">Login</button>
+            <button id="btn-register-tab" class="tab-btn">Registrieren</button>
+        </div>
+
+        <div class="form-group hidden" id="firstname-group">
+            <label for="firstname">Vorname</label>
+            <input type="text" id="firstname" placeholder="z.B. Alexander">
+        </div>
+
+        <div class="form-group">
+            <label for="email">E-Mail</label>
+            <input type="email" id="email" placeholder="deine@email.de" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Passwort</label>
+            <input type="password" id="password" placeholder="Passwort (min. 6 Zeichen)" required>
+        </div>
+
+        <button id="btn-action" class="action-btn">Login</button>
+
+        <p id="error-message" class="error"></p>
+    </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+
+    <script type="module" src="./firebase-config.js"></script>
+    <script type="module" src="./auth.js"></script>
+
+</body>
+</html>

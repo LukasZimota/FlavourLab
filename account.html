@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konto - Meine Rezepte</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loader" class="loader-container">
+        <div class="loader"></div>
+        <p>Wir laden deine Daten</p>
+    </div>
+
+    <header class="navbar content-hidden">
+        <div class="navbar-container">
+            <span class="navbar-brand">Flavour Lab</span>
+            <nav class="navbar-tabs">
+                <ul>
+                    <li><a href="dashboard.html">Kochbücher</a></li>
+                    <li><a href="planner.html">Wochenplaner</a></li>
+                    <li><a href="shopping-list.html">Einkaufsliste</a></li>
+                    <li><a href="account.html" class="active">Konto</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main class="main-content content-hidden">
+        <div class="account-container">
+            <h2 id="account-title">Hi!</h2>
+            
+            <div class="account-menu">
+                <div class="account-menu-item" id="btn-show-data">
+                    <span>Kontodaten</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="account-arrow" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </div>
+                <div class="account-menu-item" id="btn-show-stats">
+                    <span>Statistik</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="account-arrow" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="account-data-display hidden" id="account-data-display">
+                <h4>Deine Daten</h4>
+                <p><strong>Vorname:</strong> <span id="display-firstname">...</span></p>
+                <p><strong>E-Mail:</strong> <span id="display-email">...</span></p>
+                <button id="btn-hide-data" class="account-data-close-btn">Zurück</button>
+            </div>
+
+            <div class="account-stats-display hidden" id="account-stats-display">
+                <h4>Deine Statistik</h4>
+                <div class="stat-item">
+                    <span>Erstellte Kochbücher</span>
+                    <span id="stat-cookbooks">...</span>
+                </div>
+                <div class="stat-item">
+                    <span>Erstellte Rezepte</span>
+                    <span id="stat-recipes">...</span>
+                </div>
+                <div class="stat-item">
+                    <span>Geplante Mahlzeiten</span>
+                    <span id="stat-planned">...</span>
+                </div>
+                <button id="btn-hide-stats" class="account-data-close-btn">Zurück</button>
+            </div>
+            
+            <button id="btn-logout" class="logout-button">Ausloggen</button>
+        </div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <script type="module" src="./firebase-config.js"></script>
+    <script type="module" src="./account.js"></script>
+
+</body>
+</html>

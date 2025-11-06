@@ -1,0 +1,125 @@
+/* --- planner.css --- */
+
+.planner-container { width: 100%; }
+
+/* Wochennavigation */
+.week-navigation { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #ddd; }
+.week-navigation h3 { margin: 0; font-size: 1.2rem; color: #333; text-align: center; }
+.week-nav-btn { background-color: #007aff; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500; transition: background-color 0.2s; }
+.week-nav-btn:hover { background-color: #0056b3; }
+
+/* Grid-Layout */
+.planner-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem; }
+
+/* Tag Styling */
+.planner-day {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: auto; /* Höhe flexibel */
+    overflow: hidden; /* Wichtig für runde Ecken am Button */
+}
+.planner-day h3 {
+    margin: 0; padding: 1rem; font-size: 1.1rem; font-weight: 600;
+    color: #333; background-color: #f9f9f9; border-bottom: 1px solid #eee;
+    text-align: center;
+}
+.planner-day.past-day { background-color: #f8f8f8; opacity: 0.7; }
+.planner-day.past-day h3 { color: #999; }
+.planner-day.past-day .add-recipe-to-day-btn-main { opacity: 0.5; cursor: not-allowed; }
+
+/* --- Mahlzeiten-Slots (Dynamisch) --- */
+.meal-slots-container { /* NEU: Container für die Slots */
+    display: flex;
+    flex-direction: column;
+    padding: 0 1rem; /* Seitenabstand */
+    flex-grow: 1; /* Nimmt Platz ein */
+}
+.meal-slot {
+    /* Slots werden jetzt von JS erstellt, WENN sie Rezepte haben */
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.meal-slot:last-of-type { border-bottom: none; }
+.meal-slot h4 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #007aff;
+}
+/* ENDE Mahlzeiten-Slots */
+
+/* Liste geplanter Rezepte (unverändert) */
+.planned-recipes { list-style: none; padding: 0; margin: 0; }
+.planned-recipe-item { background-color: #f9f9f9; border: 1px solid #eee; border-radius: 4px; padding: 0.4rem; margin-bottom: 0.5rem; font-size: 0.9rem; display: flex; align-items: center; position: relative; }
+.planned-recipe-item:hover { background-color: #f0f0f0; }
+.planned-recipe-img, .planned-recipe-img-placeholder { width: 30px; height: 30px; border-radius: 3px; margin-right: 0.5rem; object-fit: cover; flex-shrink: 0; }
+.planned-recipe-img-placeholder { background-color: #eee; display: flex; justify-content: center; align-items: center; color: #bbb; font-size: 1rem; }
+.planned-recipe-img-placeholder::before { content: '🍽️'; }
+.planned-recipe-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; margin-right: 0.5rem; }
+.remove-planned { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 1.1rem; padding: 0 0.2rem; line-height: 1; flex-shrink: 0; opacity: 0; transition: opacity 0.2s ease-in-out; }
+.planned-recipe-item:hover .remove-planned { opacity: 1; }
+.remove-planned:hover { color: #c70000; }
+
+/* NEU: Der EINE "Rezept hinzufügen"-Knopf pro Tag */
+.add-recipe-to-day-btn-main {
+    background-color: #e9e9ed;
+    color: #555;
+    border: none;
+    padding: 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    transition: background-color 0.2s;
+    width: 100%;
+    border-top: 1px solid #eee;
+}
+.add-recipe-to-day-btn-main:hover { background-color: #dcdce1; color: #007aff; }
+/* Versteckt den Button, wenn der Tag alt ist */
+.past-day .add-recipe-to-day-btn-main {
+    display: none;
+}
+
+
+/* --- Stile für Rezeptauswahl-Pop-up (unverändert) --- */
+.filter-section { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #eee; }
+#recipe-search-input { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; margin-bottom: 1rem; }
+.cookbook-filter-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.filter-btn { background-color: #f0f0f0; color: #333; border: 1px solid #ddd; padding: 0.4rem 0.8rem; border-radius: 15px; cursor: pointer; font-size: 0.85rem; transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
+.filter-btn:hover { background-color: #e0e0e0; }
+.filter-btn.active { background-color: #007aff; color: white; border-color: #007aff; font-weight: 500; }
+.recipe-select-list { max-height: 300px; overflow-y: auto; border: 1px solid #eee; border-radius: 4px; }
+.recipe-select-item { display: flex; align-items: center; padding: 0.5rem 1rem; border-bottom: 1px solid #eee; cursor: pointer; transition: background-color 0.1s; }
+.recipe-select-item:last-child { border-bottom: none; }
+.recipe-select-item:hover { background-color: #f0f0f0; }
+.recipe-select-img, .recipe-select-img-placeholder { width: 40px; height: 40px; border-radius: 4px; margin-right: 0.75rem; object-fit: cover; flex-shrink: 0; }
+.recipe-select-img-placeholder { background-color: #eee; display: flex; justify-content: center; align-items: center; color: #bbb; font-size: 1.5rem; }
+.recipe-select-img-placeholder::before { content: '🍽️'; }
+.recipe-select-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* --- Stile für Mahlzeit-Auswahl-Pop-up --- */
+.modal-content.modal-small {
+    max-width: 350px;
+}
+.meal-type-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+.meal-type-btn {
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #333;
+    transition: background-color 0.2s, transform 0.1s;
+}
+.meal-type-btn:hover { background-color: #e0e0e0; transform: translateY(-2px); }
+.meal-type-btn:active { transform: translateY(0); }

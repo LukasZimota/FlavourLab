@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezepte - Meine Rezepte</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loader" class="loader-container">
+        <div class="loader"></div>
+        <p>Wir laden deine Rezepte</p>
+    </div>
+
+    <header class="navbar content-hidden">
+        <div class="navbar-container">
+            <span class="navbar-brand">Flavour Lab</span>
+            <nav class="navbar-tabs">
+                <ul>
+                    <li><a href="dashboard.html" class="active">Kochbücher</a></li>
+                    <li><a href="planner.html">Wochenplaner</a></li>
+                    <li><a href="shopping-list.html">Einkaufsliste</a></li>
+                    <li><a href="account.html">Konto</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content content-hidden">
+        <div class="recipe-container">
+            <a href="dashboard.html" class="back-link">Zurück zu den Kochbüchern</a>
+            
+            <div class="recipe-header">
+                <h2 id="cookbook-title">Lade Kochbuch...</h2>
+                <button id="open-filter-btn" class="filter-open-btn" title="Filtern & Suchen">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="active-filters-display" class="active-filters-container">
+                </div>
+            
+            <p id="recipe-gallery-message" class="message"></p>
+            <div id="recipe-gallery">
+                </div>
+        </div>
+    </main>
+
+    <div id="create-recipe-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content">
+            <span id="create-modal-close-btn" class="modal-close">&times;</span>
+            <h3 id="recipe-modal-title">Neues Rezept hinzufügen</h3>
+            <div class="modal-scrollable-content">
+                <div id="new-recipe-form" class="modal-form">
+                    <label for="modal-recipe-name">Rezeptname</label>
+                    <input type="text" id="modal-recipe-name" placeholder="z.B. Grüner Smoothie">
+                    <label for="modal-recipe-image">Bild-URL (Optional)</label>
+                    <input type="text" id="modal-recipe-image" placeholder="https://beispiel.com/smoothie.jpg">
+                    <label>Bewertung</label>
+                    <div class="rating-group" id="modal-recipe-rating">
+                        <span class="rating-star" data-value="1"></span>
+                        <span class="rating-star" data-value="2"></span>
+                        <span class="rating-star" data-value="3"></span>
+                        <span class="rating-star" data-value="4"></span>
+                        <span class="rating-star" data-value="5"></span>
+                    </div>
+                    <label for="modal-ingredient-input">Zutaten hinzufügen</label>
+                    <div class="ingredient-input-group">
+                        <input type="text" id="modal-ingredient-input" placeholder="z.B. 1 Banane">
+                        <button type="button" id="btn-add-ingredient">+</button>
+                    </div>
+                    <ul id="ingredient-list"></ul>
+                    <label for="modal-step-input">Zubereitungsschritte hinzufügen</label>
+                    <div class="step-input-group">
+                        <input type="text" id="modal-step-input" placeholder="z.B. Banane schälen">
+                        <button type="button" id="btn-add-step">+</button>
+                    </div>
+                    <ol id="step-list"></ol>
+                    <label for="modal-recipe-notes">Notizen & Tipps (Optional)</label>
+                    <textarea id="modal-recipe-notes" placeholder="z.B. Schmeckt am besten mit..."></textarea>
+                    <label>Tags (Optional)</label>
+                    <div class="tag-selection-group" id="modal-tag-selection">
+                        <button type="button" class="tag-btn" data-tag="Vegan">Vegan</button>
+                        <button type="button" class="tag-btn" data-tag="Vegetarisch">Vegetarisch</button>
+                        <button type="button" class="tag-btn" data-tag="Glutenfrei">Glutenfrei</button>
+                        <button type="button" class="tag-btn" data-tag="Laktosefrei">Laktosefrei</button>
+                        <button type="button" class="tag-btn" data-tag="Schnell">Schnell</button>
+                    </div>
+                </div>
+            </div>
+            <button id="btn-save-recipe" class="modal-save-button">Rezept speichern</button>
+        </div>
+    </div>
+
+    <div id="view-recipe-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content">
+            <span id="view-modal-close-btn" class="modal-close">&times;</span>
+            <div class="modal-scrollable-content">
+                <div id="view-recipe-content"> </div>
+            </div>
+            <div class="recipe-modal-actions">
+                <button id="btn-edit-recipe" class="btn-edit">Bearbeiten</button>
+                <button id="btn-delete-recipe" class="btn-delete btn-delete-recipe">Löschen</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="filter-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content">
+            <span id="filter-modal-close-btn" class="modal-close">&times;</span>
+            <h3>Filtern & Suchen</h3>
+            <div class="modal-scrollable-content">
+                <div class="modal-form">
+                    <label for="filter-search-input">Suche nach Name</label>
+                    <input type="text" id="filter-search-input" placeholder="z.B. Smoothie">
+                    <label>Mindest-Bewertung</label>
+                    <div class="rating-group" id="filter-rating-group">
+                        <span class="rating-star" data-value="1"></span>
+                        <span class="rating-star" data-value="2"></span>
+                        <span class="rating-star" data-value="3"></span>
+                        <span class="rating-star" data-value="4"></span>
+                        <span class="rating-star" data-value="5"></span>
+                    </div>
+                    <button type="button" id="clear-rating-filter" class="clear-filter-btn">Bewertung zurücksetzen</button>
+                    <label>Tags (Mehrfachauswahl)</label>
+                    <div class="tag-selection-group" id="filter-tag-group">
+                        <button type="button" class="tag-btn" data-tag="Vegan">Vegan</button>
+                        <button type="button" class="tag-btn" data-tag="Vegetarisch">Vegetarisch</button>
+                        <button type="button" class="tag-btn" data-tag="Glutenfrei">Glutenfrei</button>
+                        <button type="button" class="tag-btn" data-tag="Laktosefrei">Laktosefrei</button>
+                        <button type="button" class="tag-btn" data-tag="Schnell">Schnell</button>
+                    </div>
+                </div>
+            </div>
+            <button id="btn-apply-filters" class="modal-save-button">Filter anwenden</button>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <script type="module" src="./firebase-config.js"></script>
+    <script type="module" src="./recipes.js"></script>
+
+</body>
+</html>

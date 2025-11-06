@@ -1,0 +1,169 @@
+/* --- Login-Seite --- */
+
+/* Spezielles Body-Styling NUR für die Login-Seite */
+body.login-page {
+    padding-top: 0; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.login-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 350px;
+    text-align: center;
+}
+.form-group {
+    margin-bottom: 1rem;
+    text-align: left;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    box-sizing: border-box; 
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+.button-group button {
+    flex-grow: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+}
+#btn-login {
+    background-color: #007aff;
+}
+#btn-login:hover {
+    background-color: #0056b3;
+}
+#btn-register {
+    background-color: #34c759;
+}
+#btn-register:hover {
+    background-color: #2a9e48;
+}
+.error {
+    color: #ff3b30;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    min-height: 1.2em; 
+
+}
+
+/* --- Login-Seite --- */
+
+/* Spezielles Body-Styling NUR für die Login-Seite */
+body.login-page {
+    padding-top: 0; 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.login-container {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    width: 350px;
+    text-align: center;
+}
+.form-group {
+    margin-bottom: 1rem;
+    text-align: left;
+}
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #555;
+}
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    box-sizing: border-box; 
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.error {
+    color: #ff3b30;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    min-height: 1.2em; 
+}
+
+/* --- NEU: Stile für Tabs und Action Button --- */
+
+/* Versteckt das Vorname-Feld */
+.form-group.hidden {
+    display: none;
+}
+
+/* Container für die "Login" / "Registrieren" Tabs */
+.tab-group {
+    display: flex;
+    background-color: #f0f0f0;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+.tab-btn {
+    flex: 1; /* Beide nehmen 50% Platz */
+    padding: 0.75rem;
+    border: none;
+    background-color: transparent;
+    color: #555;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.tab-btn.active {
+    background-color: #007aff;
+    color: white;
+    font-weight: bold;
+}
+.tab-btn:not(.active):hover {
+    background-color: #e0e0e0;
+}
+
+/* Der Haupt-Button ("Login" oder "Registrieren") */
+.action-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    color: white;
+    background-color: #007aff; /* Standard (Login-Blau) */
+    font-size: 1rem;
+    margin-top: 1rem;
+    transition: background-color 0.2s;
+}
+.action-btn:hover {
+    background-color: #0056b3;
+}
+/* Spezieller Stil, wenn im Registrier-Modus */
+.action-btn.register-mode {
+    background-color: #34c759; /* Grün (Registrieren) */
+}
+.action-btn.register-mode:hover {
+    background-color: #2a9e48;
+}

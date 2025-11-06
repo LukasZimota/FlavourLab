@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wochenplaner - Mein Rezeptbuch</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="loader" class="loader-container">
+        <div class="loader"></div>
+        <p>Wir laden deinen Wochenplaner</p>
+    </div>
+
+    <header class="navbar content-hidden">
+        <div class="navbar-container">
+            <span class="navbar-brand">Flavour Lab</span>
+            <nav class="navbar-tabs">
+                <ul>
+                    <li><a href="dashboard.html">Kochbücher</a></li>
+                    <li><a href="planner.html" class="active">Wochenplaner</a></li>
+                    <li><a href="shopping-list.html">Einkaufsliste</a></li>
+                    <li><a href="account.html">Konto</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content content-hidden">
+        <div class="planner-container">
+            <div class="week-navigation">
+                <button id="btn-prev-week" class="week-nav-btn">&lt; Vorige</button>
+                <h3 id="week-display">Woche wird geladen...</h3>
+                <button id="btn-next-week" class="week-nav-btn">Nächste &gt;</button>
+            </div>
+            <div id="planner-grid" class="planner-grid">
+                </div>
+        </div>
+    </main>
+
+    <div id="select-recipe-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content">
+            <span id="select-recipe-close-btn" class="modal-close">&times;</span>
+            <h3 id="select-recipe-title">Rezept auswählen</h3>
+            <div class="filter-section">
+                <input type="text" id="recipe-search-input" placeholder="Suche nach Rezepten...">
+                <div id="cookbook-filter-list" class="cookbook-filter-list"></div>
+            </div>
+             <div id="recipe-select-list" class="recipe-select-list"></div>
+        </div>
+    </div>
+
+    <div id="meal-type-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content modal-small">
+            <span id="meal-type-close-btn" class="modal-close">&times;</span>
+            <h3>Für welche Mahlzeit?</h3>
+            <div class="meal-type-options">
+                <button class="meal-type-btn" data-meal-type="breakfast">Frühstück</button>
+                <button class="meal-type-btn" data-meal-type="lunch">Mittagessen</button>
+                <button class="meal-type-btn" data-meal-type="snacks">Jause</button>
+                <button class="meal-type-btn" data-meal-type="dinner">Abendessen</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+    <script type="module" src="./firebase-config.js"></script>
+    <script type="module" src="./planner.js"></script>
+
+</body>
+</html>
