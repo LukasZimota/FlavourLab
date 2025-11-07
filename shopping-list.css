@@ -57,7 +57,7 @@
 
 /* "Liste erstellen"-Knopf */
 .generate-list-btn {
-    background-color: #34c759;
+    background-color: #007aff;
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -70,10 +70,10 @@
     transition: background-color 0.2s;
 }
 .generate-list-btn:hover {
-    background-color: #2a9e48;
+    background-color: #0064ce;
 }
 
-/* "Tage ändern"-Knopf */
+/* "Neue Einkaufsliste"-Knopf */
 .edit-dates-btn {
     background-color: #f0f0f0;
     color: #007aff;
@@ -97,41 +97,186 @@
     margin-top: 0;
 }
 
-/* Die finale Einkaufsliste (ANGEPASST) */
-#shopping-list-results {
-    list-style: none; /* Wir verwenden eigene Stile */
-    padding-left: 0; /* Kein Einzug mehr */
-    /* column-count: 3; (ENTFERNT - Kategorien sehen in Spalten schlecht aus) */
+
+/* --- STILE FÜR DAS AKKORDEON-DESIGN --- */
+
+/* Der Wrapper für eine ganze Kategorie (z.B. "Obst & Gemüse") */
+.category-section {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    overflow: hidden; /* WICHTIG: overflow: hidden ist zurück */
 }
 
-/* NEU: Kategorie-Überschrift (z.B. "Backzutaten") */
-.shopping-list-category-title {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #007aff; /* Blau */
-    border-bottom: 2px solid #007aff;
-    padding-bottom: 0.25rem;
-    margin-top: 1.5rem; /* Abstand zwischen Kategorien */
-    margin-bottom: 0.5rem;
-}
-#shopping-list-results h4:first-of-type {
-    margin-top: 0.5rem; /* Weniger Abstand für die erste Kategorie */
-}
-
-
-/* Styling für Zutaten (klickbar & abgehakt) */
-#shopping-list-results li {
-    padding: 0.5rem 0.25rem; /* Mehr vertikaler Abstand */
+/* Der klickbare Header */
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    background-color: #f9f9f9;
     cursor: pointer;
-    transition: color 0.2s, text-decoration 0.2s, opacity 0.2s;
-    border-bottom: 1px solid #f0f0f0; /* Leichte Trennlinie */
-    font-size: 1rem;
+    border-bottom: 1px solid #eee;
+    border-radius: 7px 7px 0 0; /* Header hat obere Rundung */
 }
-#shopping-list-results li:last-of-type {
+.category-header:hover {
+    background-color: #f0f0f0;
+}
+.category-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #007aff;
+}
+/* Wenn eingeklappt, hat Header auch untere Rundung */
+.category-header:not(:has(+ .category-content.open)) {
+    border-radius: 7px;
+    border-bottom: 1px solid transparent; /* Versteckt Linie wenn zu */
+}
+
+
+/* Der Pfeil zum Auf/Zuklappen */
+.category-toggle-icon {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #aaa;
+    transition: transform 0.2s ease;
+}
+.category-toggle-icon.rotated {
+    transform: rotate(180deg);
+}
+
+/* Der Inhalts-Container (der ein- und ausklappt) */
+.category-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    background-color: #fff;
+    border-radius: 0 0 7px 7px; /* Inhalt hat untere Rundung */
+}
+.category-content.open {
+    max-height: 1000px;
+    transition: max-height 0.4s ease-in;
+    border-top: 1px solid #eee; /* Trennlinie zum Header */
+}
+
+/* Die Liste im Akkordeon-Modul */
+.shopping-list-ul {
+    list-style: none;
+    padding: 0.5rem 1.25rem;
+    margin: 0;
+}
+
+
+/* --- STILE FÜR DAS INFO-SYMBOL (JETZT ALS BUTTON) --- */
+
+/* Das einzelne Zutaten-Item */
+.shopping-list-item {
+    display: flex;
+    justify-content: space-between; /* Schiebt das Icon nach rechts */
+    align-items: center;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+.shopping-list-item:last-child {
     border-bottom: none;
 }
-#shopping-list-results li.checked-off {
+
+/* Das Label (Zutat) */
+.shopping-list-item label {
+    position: relative;
+    padding-left: 30px; 
+    cursor: pointer;
+    font-size: 1rem;
+    color: #333;
+    transition: color 0.2s, text-decoration 0.2s;
+    flex-grow: 1; 
+    margin-right: 10px;
+}
+
+/* Der (i)-Button (JETZT ALS ECHTER BUTTON) */
+.info-trigger-btn {
+    font-family: 'Times New Roman', Times, serif; 
+    font-weight: bold;
+    font-style: italic;
+    font-size: 15px;
+    color: #007aff;
+    background-color: #f0f4ff;
+    border: 1px solid #dbe9ff;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer; /* <--- WICHTIG */
+    flex-shrink: 0; 
+    padding: 0;
+    line-height: 1;
+    transition: background-color 0.2s;
+}
+.info-trigger-btn:hover {
+    background-color: #e0e9ff;
+    border-color: #007aff;
+}
+
+
+/* --- (Bestehendes CSS für das Abhaken) --- */
+
+.shopping-list-item input[type="checkbox"] {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    margin: 0;
+}
+
+.shopping-list-item label::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    transition: all 0.2s;
+}
+
+.shopping-list-item label::after {
+    content: '✔';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%) scale(0); 
+    font-size: 14px;
+    color: white;
+    transition: transform 0.2s ease-out;
+}
+
+.shopping-list-item.checked label {
     text-decoration: line-through;
     color: #999;
-    opacity: 0.7;
+}
+.shopping-list-item.checked label::before {
+    background-color: #007aff;
+    border-color: #007aff;
+}
+.shopping-list-item.checked label::after {
+    transform: translateY(-50%) scale(1);
+}
+
+/* Verstecke das Info-Icon, wenn ein Item abgehakt ist */
+.shopping-list-item.checked .info-trigger-btn {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* CSS für das Info-Modal (Liste IM Modal) */
+#info-modal-list {
+    list-style-type: disc;
+    padding-left: 25px;
+}
+#info-modal-list li {
+    margin-bottom: 0.5rem;
 }

@@ -10,12 +10,12 @@
 
     <div id="loader" class="loader-container">
         <div class="loader"></div>
-        <p>Lade Firebase...</p>
+        <p>Wir laden deine Einkaufsliste</p>
     </div>
 
     <header class="navbar content-hidden">
         <div class="navbar-container">
-            <span class="navbar-brand">Mein Rezeptbuch</span>
+            <span class="navbar-brand">Flavour Lab</span>
             <nav class="navbar-tabs">
                 <ul>
                     <li><a href="dashboard.html">Kochbücher</a></li>
@@ -41,22 +41,35 @@
             </div>
 
             <button id="btn-edit-dates" class="edit-dates-btn" style="display: none;">
-                Tage ändern
+                Neue Einkaufsliste
             </button>
 
             <div class="results-container">
                 <h3>Benötigte Zutaten:</h3>
                 <p id="shopping-list-message" class="message"></p>
-                <ul id="shopping-list-results">
-                    </ul>
+                <div id="shopping-list-results">
+                    </div>
             </div>
         </div>
+        
+        <div id="info-modal" class="modal-overlay modal-hidden">
+            <div class="modal-content modal-small">
+                <span id="info-modal-close-btn" class="modal-close">&times;</span>
+                <h3 id="info-modal-title">Zutat verwendet in:</h3>
+                <div class="modal-scrollable-content">
+                    <ul id="info-modal-list">
+                        </ul>
+                </div>
+            </div>
+        </div>
+        
     </main>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script> <script type="module" src="./firebase-config.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script> 
+    <script type="module" src="./firebase-config.js"></script>
     <script type="module" src="./shopping-list.js"></script>
 
 </body>

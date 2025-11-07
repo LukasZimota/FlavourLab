@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Konto - Meine Rezepte</title>
     <link rel="stylesheet" href="style.css">
-</head>
+    </head>
 <body>
 
     <div id="loader" class="loader-container">
@@ -44,6 +44,12 @@
                         <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
                     </svg>
                 </div>
+                <div class="account-menu-item" id="btn-show-invites">
+                    <span>Einladungen</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="account-arrow" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </div>
             </div>
 
             <div class="account-data-display hidden" id="account-data-display">
@@ -68,6 +74,14 @@
                     <span id="stat-planned">...</span>
                 </div>
                 <button id="btn-hide-stats" class="account-data-close-btn">Zurück</button>
+            </div>
+            
+            <div class="account-invites-display hidden" id="account-invites-display">
+                <h4>Deine Einladungen</h4>
+                <p id="invites-message" class="message">Lade Einladungen...</p>
+                <div id="invites-list">
+                    </div>
+                <button id="btn-hide-invites" class="account-data-close-btn">Zurück</button>
             </div>
             
             <button id="btn-logout" class="logout-button">Ausloggen</button>
