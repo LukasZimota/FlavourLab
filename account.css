@@ -142,3 +142,71 @@
 .logout-button:hover {
     background-color: #c70000;
 }
+/* --- NEU: Styling für Einladungen --- */
+.account-invites-display {
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+.account-invites-display h4 {
+    margin-top: 0;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
+}
+.invite-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 0.25rem;
+    border-bottom: 1px solid #eee;
+}
+.invite-item:last-of-type {
+    border-bottom: none;
+}
+.invite-item p { 
+    margin: 0; 
+    line-height: 1.4;
+}
+.invite-item p strong { 
+    color: #333; 
+    font-size: 1rem;
+}
+.invite-item p span { 
+    font-size: 0.9rem; 
+    color: #555; 
+}
+.invite-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-shrink: 0;
+    margin-left: 1rem;
+}
+.invite-actions button {
+    border: none; 
+    padding: 0.5rem 0.8rem; 
+    border-radius: 6px;
+    cursor: pointer; 
+    font-weight: 500; 
+    font-size: 0.9rem;
+    transition: transform 0.1s ease;
+}
+.invite-actions button:active {
+    transform: scale(0.95);
+}
+.btn-accept { 
+    background-color: #34c759; 
+    color: white; 
+}
+.btn-accept:hover {
+    background-color: #2a9e48;
+}
+.btn-decline { 
+    background-color: #ff3b30; 
+    color: white; 
+}
+.btn-decline:hover {
+    background-color: #c70000;
+}
+/* --- ENDE NEU --- */

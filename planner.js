@@ -3,15 +3,15 @@ import { auth, db } from './firebase-config.js';
 // --- Globale Variablen ---
 let currentUser;
 let allUserRecipes = []; // Enthält {id, title, imageUrl, cookbookId}
-let allUserCookbooks = [];
-let plannedMeals = {}; // Speichert geladene Pläne { "YYYY-MM-DD": { breakfast: [...], lunch: [...] } }
+let allUserCookbooks = []; // Enthält {id, title}
+let plannedMeals = {}; // Speichert geladene Pläne { "YYYY-MM-DD": { ... } }
 let plannerListener = null; // Echtzeit-Listener
 let currentWeekStartDate = getMonday(new Date());
 
 // Variablen für den Planungs-Workflow
 let currentTargetDate = null;
-let tempSelectedRecipe = null; // WICHTIG: DIESE ZEILE HAT GEFEHLT
-let selectedCookbookId = 'all';
+let tempSelectedRecipe = null;
+let selectedCookbookId = 'all'; // Filter für das Modal
 
 // --- DOM-Elemente holen ---
 const loader = document.getElementById('loader');
@@ -36,23 +36,21 @@ let weekDisplay;
 
 // --- Hilfsfunktion: Finde den Montag ---
 function getMonday(d) {
-  d = new Date(d); const day = d.getDay() || 7;
-  if (day !== 1) d.setHours(-24 * (day - 1));
-  d.setHours(0, 0, 0, 0); return d;
+  d = new Date(d); const day = d.getDay() || 7; // So=0, Mo=1... Sa=6 -> So=7
+  if (day !== 1) d.setHours(-24 * (day - 1)); // Gehe zurück zum Montag
+  d.setHours(0, 0, 0, 0); return d; // Setze auf Mitternacht
 }
 
 // --- Funktion zum Anzeigen des Inhalts ---
 const showContent = () => {
-    // console.log("==> showContent() wird aufgerufen.");
     if (loader) loader.style.display = 'none';
     if (navbar) navbar.classList.remove('content-hidden');
     if (mainContent) mainContent.classList.remove('content-hidden');
-    // console.log("==> Inhalt sollte jetzt sichtbar sein.");
 };
 
 // --- Initialisierung ---
 const init = () => {
-    console.log("Planner Init Start");
+    console.log("Planner Init Start (NEUE VERSION)");
     // Elemente holen
     plannerGrid = document.getElementById('planner-grid');
     selectRecipeModal = document.getElementById('select-recipe-modal');
@@ -71,44 +69,43 @@ const init = () => {
     // Sicherheitscheck
     if (!plannerGrid || !selectRecipeModal || !mealTypeModal || !mealTypeCloseBtn || !mealTypeOptions || !recipeSelectList || !selectRecipeTitle || !recipeSearchInput || !prevWeekBtn || !nextWeekBtn || !weekDisplay || !cookbookFilterList) {
         console.error("FEHLER: Wichtige HTML-Elemente fehlen!");
-        alert("Ein kritischer HTML-Fehler ist aufgetreten.");
         return;
     }
-    console.log("==> Alle Elemente gefunden.");
 
     // Auth Wächter
-    console.log("==> Füge onAuthStateChanged Listener hinzu...");
     auth.onAuthStateChanged(async (user) => {
-        console.log("==> onAuthStateChanged hat ausgelöst!");
         if (user) {
-            console.log("   -> Nutzer ist eingeloggt.");
             currentUser = user;
             showContent(); // Inhalt SOFORT anzeigen
             try {
-                await loadCookbooksAndRecipes();
-                displayCookbookFilters();
-                displayCurrentWeek(); // Startet Anzeige & Listener
-            } catch (error) { console.error("FEHLER Laden:", error); displayCurrentWeek(); }
+                // Lade ALLE Rezepte (eigene & geteilte)
+                await loadCookbooksAndRecipes(); 
+                displayCookbookFilters(); // Zeige Filter-Buttons an
+                displayCurrentWeek(); // Startet Anzeige & Listener für Pläne
+            } catch (error) { 
+                console.error("FEHLER beim Laden von Rezepten/Kochbüchern:", error); 
+                displayCurrentWeek(); // Zeige trotzdem den Kalender an
+            }
         } else {
-            console.log("   -> Nutzer ist NICHT eingeloggt.");
-            if (plannerListener) plannerListener();
+            if (plannerListener) plannerListener(); // Listener trennen
             plannedMeals = {}; currentUser = null;
             window.location.href = 'index.html';
         }
     });
 
-     // Event Listeners Grid
+     // Event Listeners Grid (für "Hinzufügen" und "Löschen")
      if (plannerGrid) {
         plannerGrid.addEventListener('click', (e) => {
+            // Klick auf "Rezept hinzufügen +"
             const addButton = e.target.closest('.add-recipe-to-day-btn-main');
             if (addButton) {
-                if (addButton.closest('.past-day')) { alert("Du kannst keine Rezepte zu vergangenen Tagen hinzufügen."); return; }
+                if (addButton.closest('.past-day')) { return; }
                 const date = addButton.dataset.date;
                 const dateString = addButton.closest('.planner-day').querySelector('h3').textContent;
-                console.log(`Öffne Rezeptauswahl für ${date}`);
                 openSelectRecipeModal(date, dateString);
                 return;
             }
+            // Klick auf "x" (Löschen)
             const removeButton = e.target.closest('.remove-planned');
              if (removeButton) {
                  const planId = removeButton.dataset.planId;
@@ -124,16 +121,18 @@ const init = () => {
      if (selectRecipeCloseBtn) { selectRecipeCloseBtn.addEventListener('click', closeSelectRecipeModal); }
      if (selectRecipeModal) {
          selectRecipeModal.addEventListener('click', (e) => {
+             // Klick auf Hintergrund
              if (e.target === selectRecipeModal) { closeSelectRecipeModal(); return; }
+             // Klick auf ein Rezept in der Liste
              const selectedItem = e.target.closest('.recipe-select-item');
              if (selectedItem) {
                  const recipeId = selectedItem.dataset.recipeId;
                  const selectedRecipe = allUserRecipes.find(r => r.id === recipeId);
                  if (selectedRecipe) {
-                     tempSelectedRecipe = selectedRecipe; // HIER WAR DER FEHLER
+                     tempSelectedRecipe = selectedRecipe; // Rezept zwischenspeichern
                      console.log("Rezept zwischengespeichert:", tempSelectedRecipe.title);
                      closeSelectRecipeModal();
-                     openMealTypeModal();
+                     openMealTypeModal(); // Modal 2 öffnen
                  }
              }
          });
@@ -147,6 +146,7 @@ const init = () => {
              if (mealButton) {
                  const mealType = mealButton.dataset.mealType;
                  console.log(`Mahlzeit ${mealType} ausgewählt.`);
+                 // Rezept jetzt final planen
                  planRecipe(currentTargetDate, mealType, tempSelectedRecipe);
                  closeMealTypeModal();
              }
@@ -167,7 +167,7 @@ const init = () => {
                      document.querySelectorAll('#cookbook-filter-list .filter-btn').forEach(btn => {
                          btn.classList.toggle('active', btn.dataset.cookbookId === selectedCookbookId);
                      });
-                     updateRecipeListInModal();
+                     updateRecipeListInModal(); // Rezeptliste im Modal neu filtern
                  }
              }
          });
@@ -181,30 +181,24 @@ const init = () => {
 // --- Hauptfunktion zum Anzeigen/Aktualisieren der Woche ---
 const displayCurrentWeek = () => {
     if (!currentWeekStartDate) { console.error("FEHLER: Startdatum fehlt!"); return; }
-    console.log("--> displayCurrentWeek(): Start");
-    displayPlannerDays();
-    listenToPlannedRecipesForWeek();
+    displayPlannerDays(); // HTML-Grid für die 7 Tage erstellen
+    listenToPlannedRecipesForWeek(); // Echtzeit-Listener für Pläne starten
 };
 
 // --- Navigationsfunktionen ---
 const showPreviousWeek = () => {
-    if (!currentWeekStartDate) return;
-    console.log("--> Gehe zu voriger Woche");
     currentWeekStartDate.setDate(currentWeekStartDate.getDate() - 7);
     displayCurrentWeek();
 };
 const showNextWeek = () => {
-    if (!currentWeekStartDate) return;
-    console.log("--> Gehe zu nächster Woche");
     currentWeekStartDate.setDate(currentWeekStartDate.getDate() + 7);
     displayCurrentWeek();
 };
 
-// --- Funktion zum Anzeigen der Tage (ANGEPASST) ---
+// --- Funktion zum Anzeigen der Tage ---
 const displayPlannerDays = () => {
-    if (!currentWeekStartDate) { console.error("FEHLER in displayPlannerDays: Startdatum fehlt!"); return; }
-    console.log("--> displayPlannerDays(): Start ab:", currentWeekStartDate.toLocaleDateString());
     if (!plannerGrid || !weekDisplay) { console.error("FEHLER: Grid oder WeekDisplay fehlt!"); return; }
+    
     plannerGrid.innerHTML = '';
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const weekStart = new Date(currentWeekStartDate);
@@ -215,8 +209,11 @@ const displayPlannerDays = () => {
     for (let i = 0; i < 7; i++) {
         const currentDate = new Date(weekStart); currentDate.setDate(weekStart.getDate() + i);
         const dateString = currentDate.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'numeric' });
-        const dateKey = getLocalDateKey(currentDate); // Lokales Datum
-        const dayDiv = document.createElement('div'); dayDiv.className = 'planner-day'; dayDiv.dataset.date = dateKey;
+        const dateKey = getLocalDateKey(currentDate); // Format: "YYYY-MM-DD"
+        
+        const dayDiv = document.createElement('div'); 
+        dayDiv.className = 'planner-day'; 
+        dayDiv.dataset.date = dateKey;
         if (currentDate < today) { dayDiv.classList.add('past-day'); }
 
         dayDiv.innerHTML = `
@@ -225,72 +222,122 @@ const displayPlannerDays = () => {
             <button class="add-recipe-to-day-btn-main" data-date="${dateKey}">Rezept hinzufügen +</button>
         `;
         plannerGrid.appendChild(dayDiv);
-        displayPlannedRecipesForDay(dateKey);
+        
+        // Zeige bereits geladene Pläne für diesen Tag (falls vorhanden)
+        displayPlannedRecipesForDay(dateKey); 
     }
 };
 
-// --- Lädt Kochbücher UND Rezepte (Compat-Syntax) ---
+// --- Lädt Kochbücher UND Rezepte (STARK GEÄNDERT) ---
 const loadCookbooksAndRecipes = async () => {
-    console.log("   -> loadCookbooksAndRecipes(): Start");
+    console.log("   -> Lade alle Kochbücher und Rezepte (NEUE METHODE)");
     if (!currentUser) { return Promise.reject("Kein Nutzer"); }
-    allUserCookbooks = []; allUserRecipes = [];
+    
+    allUserCookbooks = []; 
+    allUserRecipes = [];
+    
     try {
-        const cookbookSnapshot = await db.collection('users').doc(currentUser.uid).collection('cookbooks').get();
-        console.log("      Kochbücher:", cookbookSnapshot.size);
+        // 1. Finde alle Kochbücher (eigene & geteilte)
+        const cookbookSnapshot = await db.collection('cookbooks')
+            .where(`members.${currentUser.uid}`, 'in', ['owner', 'editor'])
+            .get();
+
+        console.log("      Gefundene Kochbücher:", cookbookSnapshot.size);
+        
         const recipeLoadPromises = [];
+        
+        // 2. Gehe jedes Kochbuch durch
         cookbookSnapshot.forEach(cookbookDoc => {
-            allUserCookbooks.push({ id: cookbookDoc.id, title: cookbookDoc.data().title || 'Unbenannt' });
-            const recipePromise = db.collection('users').doc(currentUser.uid).collection('cookbooks').doc(cookbookDoc.id).collection('recipes').get()
+            allUserCookbooks.push({ 
+                id: cookbookDoc.id, 
+                title: cookbookDoc.data().title || 'Unbenannt' 
+            });
+            
+            // 3. Erstelle ein Versprechen (Promise), um ALLE Rezepte aus diesem Kochbuch zu laden
+            const recipePromise = db.collection('cookbooks').doc(cookbookDoc.id)
+                .collection('recipes').get()
                 .then(recipeSnapshot => {
                     const recipesFromThisBook = [];
                     recipeSnapshot.forEach(recipeDoc => {
                         const data = recipeDoc.data();
                         recipesFromThisBook.push({
-                            id: recipeDoc.id, title: data.title || 'Unbenannt', imageUrl: data.imageUrl || null, cookbookId: cookbookDoc.id
+                            id: recipeDoc.id, 
+                            title: data.title || 'Unbenannt', 
+                            imageUrl: data.imageUrl || null, 
+                            cookbookId: cookbookDoc.id // Wichtig für die Planung!
                         });
                     });
                     return recipesFromThisBook;
-                }).catch(err => { console.error(`Fehler Rezepte ${cookbookDoc.id}:`, err); return []; });
+                }).catch(err => { 
+                    console.error(`Fehler beim Laden der Rezepte für Kochbuch ${cookbookDoc.id}:`, err); 
+                    return []; // Bei Fehler leeres Array zurückgeben
+                });
+            
             recipeLoadPromises.push(recipePromise);
         });
+
+        // Sortiere Kochbücher alphabetisch für die Filter-Liste
         allUserCookbooks.sort((a, b) => a.title.localeCompare(b.title));
+        
+        // 4. Warte, bis ALLE Rezepte aus ALLEN Kochbüchern geladen sind
         const results = await Promise.all(recipeLoadPromises);
-        allUserRecipes = results.flat();
+        allUserRecipes = results.flat(); // Füge alle Rezept-Arrays zu einem großen Array zusammen
+        
+        // Sortiere Rezepte alphabetisch für die Anzeige im Modal
         allUserRecipes.sort((a, b) => a.title.localeCompare(b.title));
-        console.log("   -> loadCookbooksAndRecipes(): ERFOLG:", allUserCookbooks.length, "Kochbücher,", allUserRecipes.length, "Rezepte");
-    } catch (error) { console.error("Fehler Laden:", error); alert("Fehler Rezept/Kochbuch-Laden."); return Promise.reject(error); }
+        
+        console.log(`   -> Laden ERFOLGREICH: ${allUserCookbooks.length} Kochbücher, ${allUserRecipes.length} Rezepte`);
+        
+    } catch (error) { 
+        console.error("Fehler beim Laden von Kochbüchern & Rezepten:", error); 
+        alert("Ein Fehler ist beim Laden deiner Rezepte aufgetreten.");
+        return Promise.reject(error); 
+    }
 };
 
-// --- Zeigt die Kochbuch-Filterbuttons an ---
+// --- Zeigt die Kochbuch-Filterbuttons an (unverändert) ---
 const displayCookbookFilters = () => {
     if (!cookbookFilterList) return;
     cookbookFilterList.innerHTML = '';
-    console.log("Zeige Kochbuch-Filter:", allUserCookbooks);
+    
     const allBtn = document.createElement('button');
-    allBtn.className = 'filter-btn active'; allBtn.dataset.cookbookId = 'all'; allBtn.textContent = 'Alle';
+    allBtn.className = 'filter-btn active'; 
+    allBtn.dataset.cookbookId = 'all'; 
+    allBtn.textContent = 'Alle';
     cookbookFilterList.appendChild(allBtn);
+    
     allUserCookbooks.forEach(book => {
         const btn = document.createElement('button');
-        btn.className = 'filter-btn'; btn.dataset.cookbookId = book.id; btn.textContent = book.title;
+        btn.className = 'filter-btn'; 
+        btn.dataset.cookbookId = book.id; 
+        btn.textContent = book.title;
         cookbookFilterList.appendChild(btn);
     });
 };
 
-// --- Funktionen für Auswahl-Modal 1 ---
+// --- Funktionen für Auswahl-Modal 1 (unverändert) ---
 const openSelectRecipeModal = (date, dateString) => {
     if (!selectRecipeModal || !selectRecipeTitle || !recipeSearchInput || !cookbookFilterList) return;
     currentTargetDate = date;
     selectRecipeTitle.textContent = `Rezept auswählen für ${dateString}`;
     recipeSearchInput.value = '';
+    
+    // Setze Filter auf "Alle" zurück
     selectedCookbookId = 'all';
-    document.querySelectorAll('#cookbook-filter-list .filter-btn').forEach(btn => { btn.classList.toggle('active', btn.dataset.cookbookId === 'all'); });
-    updateRecipeListInModal();
+    document.querySelectorAll('#cookbook-filter-list .filter-btn').forEach(btn => { 
+        btn.classList.toggle('active', btn.dataset.cookbookId === 'all'); 
+    });
+    
+    updateRecipeListInModal(); // Zeige alle Rezepte
     selectRecipeModal.classList.remove('modal-hidden');
     recipeSearchInput.focus();
 };
-const closeSelectRecipeModal = () => { if (!selectRecipeModal) return; selectRecipeModal.classList.add('modal-hidden'); };
+const closeSelectRecipeModal = () => { 
+    if (!selectRecipeModal) return; 
+    selectRecipeModal.classList.add('modal-hidden'); 
+};
 
-// --- Funktionen für Auswahl-Modal 2 ---
+// --- Funktionen für Auswahl-Modal 2 (unverändert) ---
 const openMealTypeModal = () => {
     if (!mealTypeModal) return;
     mealTypeModal.classList.remove('modal-hidden');
@@ -298,25 +345,33 @@ const openMealTypeModal = () => {
 const closeMealTypeModal = () => {
     if (!mealTypeModal) return;
     mealTypeModal.classList.add('modal-hidden');
-    tempSelectedRecipe = null;
-    currentTargetDate = null;
+    tempSelectedRecipe = null; // Zwischengespeichertes Rezept löschen
+    currentTargetDate = null; // Zieldatum löschen
 };
 
-// --- Filtert und zeigt Rezepte im Modal ---
+// --- Filtert und zeigt Rezepte im Modal (unverändert) ---
 const updateRecipeListInModal = () => {
     const searchTerm = recipeSearchInput.value.toLowerCase().trim();
-    console.log(`Update Liste: Filter='${selectedCookbookId}', Suche='${searchTerm}'`);
+    
     let recipesToShow = allUserRecipes;
-    if (selectedCookbookId !== 'all') { recipesToShow = allUserRecipes.filter(recipe => recipe.cookbookId === selectedCookbookId); }
-    if (searchTerm) { recipesToShow = recipesToShow.filter(recipe => recipe.title.toLowerCase().includes(searchTerm)); }
+    
+    // Nach Kochbuch filtern
+    if (selectedCookbookId !== 'all') { 
+        recipesToShow = allUserRecipes.filter(recipe => recipe.cookbookId === selectedCookbookId); 
+    }
+    // Nach Suche filtern
+    if (searchTerm) { 
+        recipesToShow = recipesToShow.filter(recipe => recipe.title.toLowerCase().includes(searchTerm)); 
+    }
+    
     displayRecipesInModal(recipesToShow);
 };
 
-// --- Zeigt Rezepte im Modal an (mit Bild) ---
+// --- Zeigt Rezepte im Modal an (mit Bild) (unverändert) ---
 const displayRecipesInModal = (recipes) => {
     if (!recipeSelectList) return;
     recipeSelectList.innerHTML = '';
-    console.log("Zeige Rezepte im Modal:", recipes.length, "Stück");
+    
     if (!recipes || recipes.length === 0) {
         if (recipeSearchInput.value.trim() || selectedCookbookId !== 'all') {
             recipeSelectList.innerHTML = '<p style="padding: 1rem; text-align: center; color: grey;">Keine passenden Rezepte gefunden.</p>';
@@ -325,95 +380,158 @@ const displayRecipesInModal = (recipes) => {
         }
         return;
     }
+    
     recipes.forEach(recipe => {
-        const div = document.createElement('div'); div.className = 'recipe-select-item'; div.dataset.recipeId = recipe.id;
+        const div = document.createElement('div'); 
+        div.className = 'recipe-select-item'; 
+        div.dataset.recipeId = recipe.id;
+        
         let imgHtml = '<div class="recipe-select-img-placeholder"></div>';
-        if (recipe.imageUrl) { imgHtml = `<img src="${recipe.imageUrl}" alt="${recipe.title}" class="recipe-select-img" loading="lazy">`; }
+        if (recipe.imageUrl) { 
+            imgHtml = `<img src="${recipe.imageUrl}" alt="${recipe.title}" class="recipe-select-img" loading="lazy">`; 
+        }
         div.innerHTML = ` ${imgHtml} <span class="recipe-select-title">${recipe.title}</span> `;
         recipeSelectList.appendChild(div);
     });
 };
 
-// --- Funktion zum Speichern (NEUE STRUKTUR - COMPAT) ---
+// --- Funktion zum Speichern (unverändert) ---
+// (Speichert den Plan im Profil des Nutzers)
 const planRecipe = async (date, mealType, recipeData) => {
     if (!currentUser || !date || !mealType || !recipeData || !recipeData.id) return;
     console.log(`Speichere ${recipeData.title} für ${date} / ${mealType}`);
+    
     try {
         const dayDocRef = db.collection('users').doc(currentUser.uid).collection('plannedMeals').doc(date);
+        
+        // Das Objekt, das wir in den Plan einfügen
         const plannedRecipe = {
-            id: recipeData.id, title: recipeData.title, imageUrl: recipeData.imageUrl || null, cookbookId: recipeData.cookbookId || null,
+            id: recipeData.id, 
+            title: recipeData.title, 
+            imageUrl: recipeData.imageUrl || null, 
+            cookbookId: recipeData.cookbookId || null, // WICHTIG für Einkaufsliste
             plannedAt: firebase.firestore.Timestamp.now()
         };
+        
+        // Füge das Rezept zum Array der jeweiligen Mahlzeit hinzu
         const updateData = {};
         updateData[mealType] = firebase.firestore.FieldValue.arrayUnion(plannedRecipe);
-        await dayDocRef.set(updateData, { merge: true });
+        
+        await dayDocRef.set(updateData, { merge: true }); // 'merge: true' erstellt das Dokument, falls es nicht existiert
+        
         console.log(`Rezept ${recipeData.title} geplant.`);
-    } catch (error) { console.error("Fehler beim Planen:", error); alert("Rezept konnte nicht geplant werden."); }
+    } catch (error) { 
+        console.error("Fehler beim Planen:", error); 
+        alert("Rezept konnte nicht geplant werden."); 
+    }
 };
 
-// --- Funktion zum Entfernen (NEUE STRUKTUR - COMPAT) ---
+// --- Funktion zum Entfernen (unverändert) ---
 const removePlannedRecipe = async (date, mealType, recipeIdToRemove) => {
     if (!currentUser || !date || !mealType || !recipeIdToRemove) return;
     if (!confirm("Sicher entfernen?")) return;
-    console.log(`Entferne ${recipeIdToRemove} von ${date} / ${mealType}`);
+
     const dayPlans = plannedMeals[date];
-    if (!dayPlans || !dayPlans[mealType]) { console.error("Fehler: Plan nicht im lokalen Objekt gefunden."); return; }
+    if (!dayPlans || !dayPlans[mealType]) { 
+        console.error("Fehler: Plan nicht im lokalen Objekt gefunden."); 
+        return; 
+    }
+    
+    // Finde das genaue Objekt, das entfernt werden soll, da arrayRemove das ganze Objekt braucht
     const recipeToRemove = dayPlans[mealType].find(recipe => recipe.id === recipeIdToRemove);
-    if (!recipeToRemove) { console.error("Fehler: Zu löschendes Rezeptobjekt nicht gefunden."); return; }
+    
+    if (!recipeToRemove) { 
+        console.error("Fehler: Zu löschendes Rezeptobjekt nicht gefunden."); 
+        return; 
+    }
+    
     try {
         const dayDocRef = db.collection('users').doc(currentUser.uid).collection('plannedMeals').doc(date);
+        
         const updateData = {};
         updateData[mealType] = firebase.firestore.FieldValue.arrayRemove(recipeToRemove);
+        
         await dayDocRef.update(updateData);
         console.log("Geplantes Rezept entfernt.");
-    } catch (error) { console.error("Fehler beim Entfernen:", error); alert("Rezept konnte nicht entfernt werden."); }
+        // Der Echtzeit-Listener kümmert sich um das UI-Update
+    } catch (error) { 
+        console.error("Fehler beim Entfernen:", error); 
+        alert("Rezept konnte nicht entfernt werden."); 
+    }
 };
 
-// --- Funktion für Live-Updates (NEUE STRUKTUR - COMPAT) ---
+// --- Funktion für Live-Updates (unverändert) ---
 const listenToPlannedRecipesForWeek = () => {
-    if (!currentUser || !currentWeekStartDate) { console.error("FEHLER Listener: Nutzer/Startdatum fehlt!"); return; }
-    if (plannerListener) { plannerListener(); }
-    const weekStart = new Date(currentWeekStartDate); const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate() + 7);
-    const weekStartStr = getLocalDateKey(weekStart); // KORREKTUR: Lokales Datum
-    const weekEndStr = getLocalDateKey(weekEnd);     // KORREKTUR: Lokales Datum
-    console.log(`   -> Starte Listener für ${weekStartStr} bis ${weekEndStr}`);
+    if (!currentUser || !currentWeekStartDate) { return; }
     
+    // Alten Listener trennen, falls vorhanden
+    if (plannerListener) { 
+        plannerListener(); 
+    }
+
+    const weekStart = new Date(currentWeekStartDate); 
+    const weekEnd = new Date(weekStart); 
+    weekEnd.setDate(weekStart.getDate() + 7); // Ende ist 7 Tage später
+
+    const weekStartStr = getLocalDateKey(weekStart);
+    const weekEndStr = getLocalDateKey(weekEnd);
+    
+    console.log(`   -> Starte Listener für Plandaten von ${weekStartStr} bis ${weekEndStr}`);
+    
+    // Query für Pläne in dieser Woche
     const plannedMealsRef = db.collection('users').doc(currentUser.uid).collection('plannedMeals');
     const q = plannedMealsRef.where(firebase.firestore.FieldPath.documentId(), '>=', weekStartStr)
                              .where(firebase.firestore.FieldPath.documentId(), '<', weekEndStr);
 
     plannerListener = q.onSnapshot((snapshot) => {
-        console.log("      -> Plandaten-Update:", snapshot.size, "Tage empfangen");
-        plannedMeals = {};
+        console.log("      -> Plandaten-Update empfangen:", snapshot.size, "Tage");
+        
+        // Lokalen Cache der Pläne (plannedMeals) aktualisieren
+        plannedMeals = {}; // Erst leeren
         snapshot.forEach((doc) => {
             plannedMeals[doc.id] = doc.data();
         });
-        console.log("      -> Aktualisierte Plandaten:", plannedMeals);
+        
+        // Alle 7 Tage im Grid neu rendern mit den frischen Daten
         document.querySelectorAll('.planner-day').forEach(dayDiv => {
-            if (document.body.contains(dayDiv)) { displayPlannedRecipesForDay(dayDiv.dataset.date); }
+            if (document.body.contains(dayDiv)) { // Sicherstellen, dass das Element noch da ist
+                displayPlannedRecipesForDay(dayDiv.dataset.date);
+            }
         });
-    }, (error) => { console.error("Fehler Listener:", error); if (plannerListener) plannerListener(); plannerListener = null; alert("Fehler beim Laden der Plandaten."); });
+    }, (error) => { 
+        console.error("Fehler im Echtzeit-Listener:", error); 
+        if (plannerListener) plannerListener(); 
+        plannerListener = null; 
+        alert("Fehler beim Laden der Plandaten."); 
+    });
 };
 
-// --- Funktion zum Anzeigen der Pläne pro Tag (ANGEPASST) ---
+// --- Funktion zum Anzeigen der Pläne pro Tag (unverändert) ---
 const displayPlannedRecipesForDay = (dateKey) => {
     const slotContainer = document.getElementById(`slots-container-${dateKey}`);
-    if (!slotContainer) return;
-    slotContainer.innerHTML = '';
+    if (!slotContainer) return; // Tag ist nicht (mehr) im DOM
+    
+    slotContainer.innerHTML = ''; // Slots leeren
 
     const plansForDay = plannedMeals[dateKey];
     const mealOrder = { breakfast: "Frühstück", lunch: "Mittagessen", dinner: "Abendessen", snacks: "Jause" };
 
+    // Gehe die Mahlzeiten in der richtigen Reihenfolge durch
     for (const mealType in mealOrder) {
         const recipesForMeal = (plansForDay && plansForDay[mealType]) ? plansForDay[mealType] : [];
+        
+        // Erstelle einen Slot nur, wenn Rezepte dafür vorhanden sind
         if (recipesForMeal.length > 0) {
             const mealSlotDiv = document.createElement('div');
             mealSlotDiv.className = 'meal-slot';
             mealSlotDiv.dataset.mealType = mealType;
+            
             let recipesHtml = '';
             recipesForMeal.forEach(plan => {
                 let imgHtml = '<div class="planned-recipe-img-placeholder"></div>';
-                if (plan.imageUrl) { imgHtml = `<img src="${plan.imageUrl}" alt="${plan.title}" class="planned-recipe-img" loading="lazy">`; }
+                if (plan.imageUrl) { 
+                    imgHtml = `<img src="${plan.imageUrl}" alt="${plan.title}" class="planned-recipe-img" loading="lazy">`; 
+                }
                 recipesHtml += `
                     <li class="planned-recipe-item">
                         ${imgHtml}
@@ -422,6 +540,7 @@ const displayPlannedRecipesForDay = (dateKey) => {
                     </li>
                 `;
             });
+            
             mealSlotDiv.innerHTML = `
                 <h4>${mealOrder[mealType]}</h4>
                 <ul class="planned-recipes">
@@ -433,8 +552,7 @@ const displayPlannedRecipesForDay = (dateKey) => {
     }
 };
 
-// --- NEU: Hilfsfunktion für LOKALES Datum (löst Zeitzonenproblem) ---
-// (Steht oben, aber hier nochmal zur Sicherheit, falls die globale Deklaration fehlschlägt)
+// --- Hilfsfunktion für LOKALES Datum (löst Zeitzonenproblem) ---
 function getLocalDateKey(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0'); // Monate sind 0-basiert
