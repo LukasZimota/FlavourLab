@@ -200,40 +200,43 @@ const declineInvitation = async (inviteId) => {
 };
 
 
-// --- Funktionen zum Umschalten der Ansicht (ERWEITERT) ---
+// --- Funktionen zum Umschalten der Ansicht (JETZT GEÄNDERT) ---
 const showDataView = () => {
     displayFirstname.textContent = currentUserData.firstName || "(Kein Name gespeichert)";
     displayEmail.textContent = currentUserData.email || currentUser.email;
+    accountTitle.classList.add('hidden'); // <-- GEÄNDERT
     accountMenu.classList.add('hidden');
     logoutButton.classList.add('hidden');
     accountDataDisplay.classList.remove('hidden');
     accountStatsDisplay.classList.add('hidden');
-    accountInvitesDisplay.classList.add('hidden'); // NEU
+    accountInvitesDisplay.classList.add('hidden');
 };
 
 const showStatsView = () => {
+    accountTitle.classList.add('hidden'); // <-- GEÄNDERT
     accountMenu.classList.add('hidden');
     logoutButton.classList.add('hidden');
     accountDataDisplay.classList.add('hidden');
     accountStatsDisplay.classList.remove('hidden');
-    accountInvitesDisplay.classList.add('hidden'); // NEU
+    accountInvitesDisplay.classList.add('hidden');
 };
 
-// NEU
 const showInvitesView = () => {
+    accountTitle.classList.add('hidden'); // <-- GEÄNDERT
     accountMenu.classList.add('hidden');
     logoutButton.classList.add('hidden');
     accountDataDisplay.classList.add('hidden');
     accountStatsDisplay.classList.add('hidden');
-    accountInvitesDisplay.classList.remove('hidden'); // NEU
+    accountInvitesDisplay.classList.remove('hidden');
 };
 
 const showMenuView = () => {
+    accountTitle.classList.remove('hidden'); // <-- GEÄNDERT
     accountMenu.classList.remove('hidden');
     logoutButton.classList.remove('hidden');
     accountDataDisplay.classList.add('hidden');
     accountStatsDisplay.classList.add('hidden');
-    accountInvitesDisplay.classList.add('hidden'); // NEU
+    accountInvitesDisplay.classList.add('hidden');
 };
 
 // --- Logout-Funktion (unverändert) ---

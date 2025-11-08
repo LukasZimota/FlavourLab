@@ -86,11 +86,16 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     padding: 1.5rem 1rem 1rem;
 }
-.account-data-display.hidden,
-.account-stats-display.hidden,
-.account-invites-display.hidden {
-    display: none;
+
+/* * --- HIER IST DIE WICHTIGE ÄNDERUNG ---
+ * Wir erstellen eine allgemeine .hidden-Klasse,
+ * die jetzt auf das Menü, den Titel und die Buttons angewendet wird.
+*/
+.hidden {
+    display: none !important;
 }
+
+
 .account-data-display h4,
 .account-stats-display h4,
 .account-invites-display h4 {
@@ -99,18 +104,30 @@
     border-bottom: 1px solid #f0f0f0;
     padding-bottom: 0.5rem;
 }
+
+/* --- START: Moderner "Zurück"-Button --- */
 .account-data-close-btn {
-    background: none;
+    background-color: #f0f0f0; /* Heller grauer Hintergrund */
     border: none;
-    color: #007aff;
+    color: #007aff; /* Blaue Schrift */
     cursor: pointer;
     font-size: 0.9rem;
-    margin-top: 1rem;
-    padding: 0.25rem;
+    font-weight: 500; /* Etwas fetter */
+    margin-top: 1.5rem; /* Mehr Abstand nach oben */
+    padding: 0.6rem 1rem; /* Padding für Button-Größe */
+    border-radius: 20px; /* "Pillen"-Form */
+    transition: background-color 0.2s, transform 0.1s; /* Sanfte Transition */
+    display: inline-block; /* Damit Padding funktioniert */
 }
 .account-data-close-btn:hover {
-    text-decoration: underline;
+    background-color: #e0e0e0; /* Dunkleres Grau beim Hover */
+    text-decoration: none; /* Kein Unterstreichen */
+    transform: scale(1.02); /* Leichter Zoom-Effekt */
 }
+.account-data-close-btn:active {
+    transform: scale(0.98); /* Klick-Effekt */
+}
+/* --- ENDE: Moderner "Zurück"-Button --- */
 
 /* Statistik-Zeilen */
 .stat-item {

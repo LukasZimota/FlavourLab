@@ -93,9 +93,19 @@
     border-top: 1px solid #ddd;
     padding-top: 1.5rem;
 }
-.results-container h3 {
-    margin-top: 0;
+
+/* --- START: NEUER HEADER FÜR H3 UND BUTTON --- */
+.results-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem; /* Abstand zur "..."-Nachricht */
 }
+.results-header h3 {
+    margin: 0; /* Verhindert zusätzlichen Abstand */
+}
+/* --- ENDE: NEUER HEADER --- */
+
 
 /* --- STILE FÜR DAS AKKORDEON-DESIGN --- */
 .category-section {
@@ -277,29 +287,41 @@
     transform: scale(1.05);
 }
 
-/* --- Stile für Druck-Knopf --- */
+/* --- START: Geänderte Stile für Druck-Knopf --- */
 .print-list-btn {
-    background-color: #e9e9ed;
-    color: #007aff;
-    border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    color: #555;
+    width: 40px; /* Quadratisch */
+    height: 40px; /* Quadratisch */
+    border-radius: 50%; /* Rund */
     cursor: pointer;
-    font-weight: 500;
-    font-size: 0.9rem;
-    display: block;
-    margin: 1.5rem 0 0 auto; /* Oben Abstand, rechtsbündig */
-    transition: background-color 0.2s;
+    display: flex; /* Für SVG-Zentrierung */
+    justify-content: center; /* Für SVG-Zentrierung */
+    align-items: center; /* Für SVG-Zentrierung */
+    transition: all 0.2s;
+    padding: 0; /* Padding entfernen */
+    margin: 0; /* Margin zurücksetzen */
+    flex-shrink: 0; /* Verhindert, dass der Button schrumpft */
 }
 .print-list-btn:hover {
-    background-color: #dcdce1;
+    background-color: #e0e0e0;
+    color: #007aff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
+.print-list-btn svg {
+    width: 18px;
+    height: 18px;
+}
+/* --- ENDE: Geänderte Stile für Druck-Knopf --- */
 
-/* --- START: KORRIGIERTE Druck-Stile --- */
+
+/* --- GEÄNDERTE Druck-Stile (von letzter Anfrage) --- */
 @media print {
     body {
         padding-top: 0;
         background-color: #ffffff;
+        font-size: 10pt; /* Kleinere Basisschriftgröße */
     }
 
     /* Alles ausblenden, was NICHT gedruckt werden soll */
@@ -320,16 +342,30 @@
         padding: 0;
     }
     .shopping-list-container h2 {
-        padding-top: 1rem;
+        padding-top: 0.5rem;
+        font-size: 14pt; /* Titel etwas kleiner */
+    }
+    /* Der .results-header wird normal gedruckt */
+    .results-header h3 {
+        font-size: 12pt;
+    }
+    #shopping-list-message {
+        font-size: 10pt;
     }
 
     /* Akkordeon-Boxen für den Druck optimieren */
     .category-section {
         border: 1px solid #ccc;
-        page-break-inside: avoid;
+        page-break-inside: avoid; /* Verhindert Seitenumbruch IN einer Kategorie */
+        margin-bottom: 0.5rem; /* Weniger Abstand */
     }
     .category-header {
         background-color: #f0f0f0;
+        padding: 0.4rem 0.8rem; /* Weniger Padding */
+    }
+    .category-header h3 {
+        margin: 0;
+        font-size: 1.1rem; /* Kategorientitel kleiner */
     }
     .category-content {
         max-height: none !important;
@@ -340,27 +376,42 @@
     .category-toggle-icon {
         display: none;
     }
+    .shopping-list-ul {
+        list-style: none;
+        padding: 0.25rem 1rem; /* Weniger Padding */
+        margin: 0;
+    }
 
-    /* --- KORREKTUR: Checkboxen und Info-Knopf anpassen --- */
+
+    /* Checkboxen und Info-Knopf anpassen */
     
-    /* Verstecke nur das unsichtbare Original, das Häkchen und den Info-Knopf */
+    /* Verstecke das unsichtbare Original, das Häkchen und den Info-Knopf */
     .shopping-list-item input[type="checkbox"],
     .shopping-list-item label::after,  /* Das Häkchen verstecken */
     .info-trigger-btn {
         display: none !important;
     }
 
+    .shopping-list-item {
+        padding: 0.2rem 0; /* VIEL weniger Zeilenabstand */
+        border: none;
+    }
+
     /* Label: Platz beibehalten, Text normalisieren */
     .shopping-list-item label {
-        /* padding-left: 0;  <-- ENTFERNT (damit Platz für Box bleibt) */
+        padding-left: 22px; /* Platz für die kleinere Box */
+        font-size: 0.9rem; /* Kleinere Schrift für Items */
         text-decoration: none !important; /* Keine durchgestrichenen Items */
         color: #000 !important; /* Alle Items schwarz drucken */
     }
     
-    /* Box (::before) sichtbar lassen und für Druck formatieren */
+    /* Box (::before) sichtbar lassen und verkleinern */
     .shopping-list-item label::before {
          border-color: #000 !important; /* Schwarzer Rand für die Box */
          background: #fff !important; /* Sicherstellen, dass Hintergrund weiß ist */
+         width: 12px; /* Box verkleinert */
+         height: 12px; /* Box verkleinert */
+         border-width: 1px; /* Dünnerer Rand */
     }
 }
-/* --- ENDE: KORRIGIERTE Druck-Stile --- */
+/* --- ENDE: GEÄNDERTE Druck-Stile --- */

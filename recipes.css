@@ -61,7 +61,7 @@
 .clear-all-filters-btn:hover { color: #c70000; }
 
 /* --- Rezept 6-Spalten-Grid --- */
-#recipe-gallery { display: grid; grid-template-columns: repeat(6, 1fr); gap: 1.5rem; margin-top: 1rem; }
+#recipe-gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 1rem; }
 
 /* --- Kachel-Layout --- */
 .recipe-item { position: relative; background-color: #e9e9ed; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); cursor: pointer; text-decoration: none; aspect-ratio: 2 / 3; transition: transform 0.25s ease, box-shadow 0.25s ease; }
