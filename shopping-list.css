@@ -97,18 +97,13 @@
     margin-top: 0;
 }
 
-
 /* --- STILE FÜR DAS AKKORDEON-DESIGN --- */
-
-/* Der Wrapper für eine ganze Kategorie (z.B. "Obst & Gemüse") */
 .category-section {
     border: 1px solid #eee;
     border-radius: 8px;
     margin-bottom: 0.75rem;
-    overflow: hidden; /* WICHTIG: overflow: hidden ist zurück */
+    overflow: hidden;
 }
-
-/* Der klickbare Header */
 .category-header {
     display: flex;
     justify-content: space-between;
@@ -117,7 +112,7 @@
     background-color: #f9f9f9;
     cursor: pointer;
     border-bottom: 1px solid #eee;
-    border-radius: 7px 7px 0 0; /* Header hat obere Rundung */
+    border-radius: 7px 7px 0 0;
 }
 .category-header:hover {
     background-color: #f0f0f0;
@@ -127,14 +122,10 @@
     font-size: 1.1rem;
     color: #007aff;
 }
-/* Wenn eingeklappt, hat Header auch untere Rundung */
 .category-header:not(:has(+ .category-content.open)) {
     border-radius: 7px;
-    border-bottom: 1px solid transparent; /* Versteckt Linie wenn zu */
+    border-bottom: 1px solid transparent;
 }
-
-
-/* Der Pfeil zum Auf/Zuklappen */
 .category-toggle-icon {
     font-size: 0.8rem;
     font-weight: bold;
@@ -144,35 +135,28 @@
 .category-toggle-icon.rotated {
     transform: rotate(180deg);
 }
-
-/* Der Inhalts-Container (der ein- und ausklappt) */
 .category-content {
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s ease-out;
     background-color: #fff;
-    border-radius: 0 0 7px 7px; /* Inhalt hat untere Rundung */
+    border-radius: 0 0 7px 7px;
 }
 .category-content.open {
     max-height: 1000px;
     transition: max-height 0.4s ease-in;
-    border-top: 1px solid #eee; /* Trennlinie zum Header */
+    border-top: 1px solid #eee;
 }
-
-/* Die Liste im Akkordeon-Modul */
 .shopping-list-ul {
     list-style: none;
     padding: 0.5rem 1.25rem;
     margin: 0;
 }
 
-
-/* --- STILE FÜR DAS INFO-SYMBOL (JETZT ALS BUTTON) --- */
-
-/* Das einzelne Zutaten-Item */
+/* --- STILE FÜR DAS INFO-SYMBOL --- */
 .shopping-list-item {
     display: flex;
-    justify-content: space-between; /* Schiebt das Icon nach rechts */
+    justify-content: space-between;
     align-items: center;
     padding: 0.6rem 0;
     border-bottom: 1px solid #f0f0f0;
@@ -180,8 +164,6 @@
 .shopping-list-item:last-child {
     border-bottom: none;
 }
-
-/* Das Label (Zutat) */
 .shopping-list-item label {
     position: relative;
     padding-left: 30px; 
@@ -192,8 +174,6 @@
     flex-grow: 1; 
     margin-right: 10px;
 }
-
-/* Der (i)-Button (JETZT ALS ECHTER BUTTON) */
 .info-trigger-btn {
     font-family: 'Times New Roman', Times, serif; 
     font-weight: bold;
@@ -208,7 +188,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer; /* <--- WICHTIG */
+    cursor: pointer;
     flex-shrink: 0; 
     padding: 0;
     line-height: 1;
@@ -219,16 +199,13 @@
     border-color: #007aff;
 }
 
-
 /* --- (Bestehendes CSS für das Abhaken) --- */
-
 .shopping-list-item input[type="checkbox"] {
     opacity: 0;
     width: 0;
     height: 0;
     margin: 0;
 }
-
 .shopping-list-item label::before {
     content: '';
     position: absolute;
@@ -242,7 +219,6 @@
     background-color: #fff;
     transition: all 0.2s;
 }
-
 .shopping-list-item label::after {
     content: '✔';
     position: absolute;
@@ -253,7 +229,6 @@
     color: white;
     transition: transform 0.2s ease-out;
 }
-
 .shopping-list-item.checked label {
     text-decoration: line-through;
     color: #999;
@@ -265,14 +240,10 @@
 .shopping-list-item.checked label::after {
     transform: translateY(-50%) scale(1);
 }
-
-/* Verstecke das Info-Icon, wenn ein Item abgehakt ist */
 .shopping-list-item.checked .info-trigger-btn {
     opacity: 0.3;
     pointer-events: none;
 }
-
-/* CSS für das Info-Modal (Liste IM Modal) */
 #info-modal-list {
     list-style-type: disc;
     padding-left: 25px;
@@ -280,3 +251,116 @@
 #info-modal-list li {
     margin-bottom: 0.5rem;
 }
+
+/* --- Stile für "Plus"-Knopf --- */
+.fab-add-item {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 56px;
+    height: 56px;
+    background-color: #007aff;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 2rem;
+    font-weight: 300;
+    line-height: 56px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    cursor: pointer;
+    z-index: 900;
+    transition: background-color 0.2s, transform 0.2s ease-out;
+}
+.fab-add-item:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+/* --- Stile für Druck-Knopf --- */
+.print-list-btn {
+    background-color: #e9e9ed;
+    color: #007aff;
+    border: none;
+    padding: 0.6rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: block;
+    margin: 1.5rem 0 0 auto; /* Oben Abstand, rechtsbündig */
+    transition: background-color 0.2s;
+}
+.print-list-btn:hover {
+    background-color: #dcdce1;
+}
+
+/* --- START: KORRIGIERTE Druck-Stile --- */
+@media print {
+    body {
+        padding-top: 0;
+        background-color: #ffffff;
+    }
+
+    /* Alles ausblenden, was NICHT gedruckt werden soll */
+    .navbar,
+    .fab-add-item,
+    .date-selector-container,
+    .edit-dates-btn,
+    .print-list-btn,
+    #info-modal,
+    #add-item-modal,
+    .nav-toggle-btn,
+    .navbar-tabs {
+        display: none !important;
+    }
+
+    /* Sicherstellen, dass der Hauptinhalt den Platz einnimmt */
+    .main-content {
+        padding: 0;
+    }
+    .shopping-list-container h2 {
+        padding-top: 1rem;
+    }
+
+    /* Akkordeon-Boxen für den Druck optimieren */
+    .category-section {
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
+    }
+    .category-header {
+        background-color: #f0f0f0;
+    }
+    .category-content {
+        max-height: none !important;
+        display: block !important;
+        overflow: visible;
+        border-top: 1px solid #ccc;
+    }
+    .category-toggle-icon {
+        display: none;
+    }
+
+    /* --- KORREKTUR: Checkboxen und Info-Knopf anpassen --- */
+    
+    /* Verstecke nur das unsichtbare Original, das Häkchen und den Info-Knopf */
+    .shopping-list-item input[type="checkbox"],
+    .shopping-list-item label::after,  /* Das Häkchen verstecken */
+    .info-trigger-btn {
+        display: none !important;
+    }
+
+    /* Label: Platz beibehalten, Text normalisieren */
+    .shopping-list-item label {
+        /* padding-left: 0;  <-- ENTFERNT (damit Platz für Box bleibt) */
+        text-decoration: none !important; /* Keine durchgestrichenen Items */
+        color: #000 !important; /* Alle Items schwarz drucken */
+    }
+    
+    /* Box (::before) sichtbar lassen und für Druck formatieren */
+    .shopping-list-item label::before {
+         border-color: #000 !important; /* Schwarzer Rand für die Box */
+         background: #fff !important; /* Sicherstellen, dass Hintergrund weiß ist */
+    }
+}
+/* --- ENDE: KORRIGIERTE Druck-Stile --- */

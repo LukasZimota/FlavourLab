@@ -16,17 +16,29 @@
     <header class="navbar content-hidden">
         <div class="navbar-container">
             <span class="navbar-brand">Flavour Lab</span>
-            <nav class="navbar-tabs">
-                <ul>
-                    <li><a href="dashboard.html">Kochbücher</a></li>
-                    <li><a href="planner.html">Wochenplaner</a></li>
-                    <li><a href="shopping-list.html" class="active">Einkaufsliste</a></li>
-                    <li><a href="account.html">Konto</a></li>
-                </ul>
-            </nav>
+            
+            <button id="nav-toggle-btn" class="nav-toggle-btn" aria-label="Menü öffnen" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span id="nav-toggle-notification" class="nav-toggle-notification-dot notification-dot-hidden"></span>
+            </button>
         </div>
     </header>
 
+    <nav id="nav-menu" class="navbar-tabs">
+        <ul>
+            <li><a href="dashboard.html">📚 Kochbücher</a></li>
+            <li><a href="planner.html">📅 Wochenplaner</a></li>
+            <li><a href="shopping-list.html" class="active">🛒 Einkaufsliste</a></li>
+            <li>
+                <a href="account.html">
+                    👤 Konto
+                    <span id="nav-account-notification" class="nav-menu-notification-dot notification-dot-hidden"></span>
+                </a>
+            </li>
+        </ul>
+    </nav>
     <main class="main-content content-hidden">
         <div class="shopping-list-container" id="shopping-list-main-container">
             <h2>Einkaufsliste erstellen</h2>
@@ -49,7 +61,11 @@
                 <p id="shopping-list-message" class="message"></p>
                 <div id="shopping-list-results">
                     </div>
-            </div>
+                
+                <button id="btn-print-list" class="print-list-btn" style="display: none;">
+                    Liste Drucken
+                </button>
+                </div>
         </div>
         
         <div id="info-modal" class="modal-overlay modal-hidden">
@@ -63,14 +79,110 @@
             </div>
         </div>
         
+        <div id="add-item-modal" class="modal-overlay modal-hidden">
+            <div class="modal-content modal-small">
+                <span id="add-item-close-btn" class="modal-close">&times;</span>
+                <h3>Item hinzufügen</h3>
+                <form id="add-item-form" class="modal-form">
+                    <label for="add-item-input">Was möchtest du hinzufügen?</label>
+                    <input type="text" id="add-item-input" placeholder="z.B. Milch" required>
+                    <button type="submit" id="btn-add-item-submit">Hinzufügen</button>
+                </form>
+            </div>
+        </div>
+        
     </main>
+
+    <button id="btn-open-add-item-modal" class="fab-add-item" aria-label="Item hinzufügen">
+        +
+    </button>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script> 
+    
     <script type="module" src="./firebase-config.js"></script>
     <script type="module" src="./shopping-list.js"></script>
+
+    <script type="module">
+      // Importiere auth und db, da wir sie hier brauchen
+      import { auth, db } from './firebase-config.js';
+
+      // Globale Variable für den Listener, damit wir ihn trennen können
+      let invitationListener = null;
+
+      // Funktion zum Umschalten des Menüs
+      const setupNavToggle = () => {
+        const navToggleBtn = document.getElementById('nav-toggle-btn');
+        if (navToggleBtn) {
+          navToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('nav-open');
+            const isExpanded = navToggleBtn.getAttribute('aria-expanded') === 'true';
+            navToggleBtn.setAttribute('aria-expanded', !isExpanded);
+          });
+        }
+      };
+
+      // Funktion zum Anzeigen/Verstecken der Punkte
+      const updateNotificationDots = (hasInvites) => {
+        const toggleDot = document.getElementById('nav-toggle-notification');
+        const menuDot = document.getElementById('nav-account-notification');
+        
+        // Dieser Punkt existiert NUR auf account.html, aber wir suchen trotzdem danach
+        const accountPageDot = document.getElementById('account-invites-notification');
+
+        if (hasInvites) {
+          if (toggleDot) toggleDot.classList.remove('notification-dot-hidden');
+          if (menuDot) menuDot.classList.remove('notification-dot-hidden');
+          if (accountPageDot) accountPageDot.classList.remove('notification-dot-hidden');
+        } else {
+          if (toggleDot) toggleDot.classList.add('notification-dot-hidden');
+          if (menuDot) menuDot.classList.add('notification-dot-hidden');
+          if (accountPageDot) accountPageDot.classList.add('notification-dot-hidden');
+        }
+      };
+
+      // Funktion, die auf neue Einladungen hört
+      const listenForInvites = (userId) => {
+        // Trenne alten Listener, falls vorhanden
+        if (invitationListener) {
+          invitationListener();
+        }
+
+        // Erstelle die Echtzeit-Query
+        const invitesQuery = db.collection("invitations")
+            .where("toUserId", "==", userId)
+            .where("status", "==", "pending");
+
+        // Starte den Echtzeit-Listener
+        invitationListener = invitesQuery.onSnapshot((snapshot) => {
+            console.log(`Notification-Check: ${snapshot.size} Einladungen gefunden.`);
+            updateNotificationDots(!snapshot.empty); // Zeige/verstecke Punkte
+        }, (error) => {
+            console.error("Fehler im Benachrichtigungs-Listener:", error);
+            updateNotificationDots(false); // Bei Fehler sicherheitshalber verstecken
+        });
+      };
+
+      // Auth-Wächter, der alles startet
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          // Nutzer ist eingeloggt, starte den Listener
+          listenForInvites(user.uid);
+        } else {
+          // Nutzer ist ausgeloggt, trenne Listener und verstecke Punkte
+          if (invitationListener) {
+            invitationListener();
+            invitationListener = null;
+          }
+          updateNotificationDots(false);
+        }
+      });
+
+      // Starte den Menü-Toggle-Listener, sobald das DOM geladen ist
+      document.addEventListener('DOMContentLoaded', setupNavToggle);
+    </script>
 
 </body>
 </html>

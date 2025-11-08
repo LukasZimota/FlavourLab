@@ -16,22 +16,34 @@
     <header class="navbar content-hidden">
         <div class="navbar-container">
             <span class="navbar-brand">Flavour Lab</span>
-            <nav class="navbar-tabs">
-                <ul>
-                    <li><a href="dashboard.html">Kochbücher</a></li>
-                    <li><a href="planner.html">Wochenplaner</a></li>
-                    <li><a href="shopping-list.html">Einkaufsliste</a></li>
-                    <li><a href="account.html" class="active">Konto</a></li>
-                </ul>
-            </nav>
+            
+            <button id="nav-toggle-btn" class="nav-toggle-btn" aria-label="Menü öffnen" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span id="nav-toggle-notification" class="nav-toggle-notification-dot notification-dot-hidden"></span>
+            </button>
         </div>
     </header>
-    
+
+    <nav id="nav-menu" class="navbar-tabs">
+        <ul>
+            <li><a href="dashboard.html">📚 Kochbücher</a></li>
+            <li><a href="planner.html">📅 Wochenplaner</a></li>
+            <li><a href="shopping-list.html">🛒 Einkaufsliste</a></li>
+            <li>
+                <a href="account.html" class="active">
+                    👤 Konto
+                    <span id="nav-account-notification" class="nav-menu-notification-dot notification-dot-hidden"></span>
+                </a>
+            </li>
+        </ul>
+    </nav>
     <main class="main-content content-hidden">
         <div class="account-container">
             <h2 id="account-title">Hi!</h2>
             
-            <div class="account-menu">
+            <div class="account-menu" id="account-menu">
                 <div class="account-menu-item" id="btn-show-data">
                     <span>Kontodaten</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="account-arrow" viewBox="0 0 16 16">
@@ -45,13 +57,23 @@
                     </svg>
                 </div>
                 <div class="account-menu-item" id="btn-show-invites">
-                    <span>Einladungen</span>
+                    <span>
+                        Einladungen
+                        <span id="account-invites-notification" class="nav-menu-notification-dot notification-dot-hidden"></span>
+                    </span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="account-arrow" viewBox="0 0 16 16">
                         <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
                     </svg>
                 </div>
-            </div>
 
+                <a href="https://www.buymeacoffee.com/DEIN-PROFIL" target="_blank" rel="noopener noreferrer" class="account-menu-item account-menu-link">
+                    <span>Spendiere mir einen Kaffee</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="account-arrow" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M8.636 3.5a.5.5 0 0 0-.5-.5H1.5A1.5 1.5 0 0 0 0 4.5v10A1.5 1.5 0 0 0 1.5 16h10a1.5 1.5 0 0 0 1.5-1.5V7.864a.5.5 0 0 0-1 0V14.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5h6.636a.5.5 0 0 0 .5-.5"/>
+                        <path fill-rule="evenodd" d="M16 .5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0 0 1h3.793L6.146 9.146a.5.5 0 1 0 .708.708L15 1.707V5.5a.5.5 0 0 0 1 0z"/>
+                    </svg>
+                </a>
+            </div>
             <div class="account-data-display hidden" id="account-data-display">
                 <h4>Deine Daten</h4>
                 <p><strong>Vorname:</strong> <span id="display-firstname">...</span></p>
@@ -83,7 +105,6 @@
                     </div>
                 <button id="btn-hide-invites" class="account-data-close-btn">Zurück</button>
             </div>
-            
             <button id="btn-logout" class="logout-button">Ausloggen</button>
         </div>
     </main>
@@ -93,7 +114,86 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
     <script type="module" src="./firebase-config.js"></script>
-    <script type="module" src="./account.js"></script>
+    <script type="module" src="./account.js"></script> 
+
+    <script type="module">
+      // Importiere auth und db, da wir sie hier brauchen
+      import { auth, db } from './firebase-config.js';
+
+      // Globale Variable für den Listener, damit wir ihn trennen können
+      let invitationListener = null;
+
+      // Funktion zum Umschalten des Menüs
+      const setupNavToggle = () => {
+        const navToggleBtn = document.getElementById('nav-toggle-btn');
+        if (navToggleBtn) {
+          navToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('nav-open');
+            const isExpanded = navToggleBtn.getAttribute('aria-expanded') === 'true';
+            navToggleBtn.setAttribute('aria-expanded', !isExpanded);
+          });
+        }
+      };
+
+      // Funktion zum Anzeigen/Verstecken der Punkte
+      const updateNotificationDots = (hasInvites) => {
+        const toggleDot = document.getElementById('nav-toggle-notification');
+        const menuDot = document.getElementById('nav-account-notification');
+        
+        // Dieser Punkt existiert NUR auf account.html
+        const accountPageDot = document.getElementById('account-invites-notification');
+
+        if (hasInvites) {
+          if (toggleDot) toggleDot.classList.remove('notification-dot-hidden');
+          if (menuDot) menuDot.classList.remove('notification-dot-hidden');
+          if (accountPageDot) accountPageDot.classList.remove('notification-dot-hidden');
+        } else {
+          if (toggleDot) toggleDot.classList.add('notification-dot-hidden');
+          if (menuDot) menuDot.classList.add('notification-dot-hidden');
+          if (accountPageDot) accountPageDot.classList.add('notification-dot-hidden');
+        }
+      };
+
+      // Funktion, die auf neue Einladungen hört
+      const listenForInvites = (userId) => {
+        // Trenne alten Listener, falls vorhanden
+        if (invitationListener) {
+          invitationListener();
+        }
+
+        // Erstelle die Echtzeit-Query
+        const invitesQuery = db.collection("invitations")
+            .where("toUserId", "==", userId)
+            .where("status", "==", "pending");
+
+        // Starte den Echtzeit-Listener
+        invitationListener = invitesQuery.onSnapshot((snapshot) => {
+            console.log(`Notification-Check: ${snapshot.size} Einladungen gefunden.`);
+            updateNotificationDots(!snapshot.empty); // Zeige/verstecke Punkte
+        }, (error) => {
+            console.error("Fehler im Benachrichtigungs-Listener:", error);
+            updateNotificationDots(false); // Bei Fehler sicherheitshalber verstecken
+        });
+      };
+
+      // Auth-Wächter, der alles startet
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          // Nutzer ist eingeloggt, starte den Listener
+          listenForInvites(user.uid);
+        } else {
+          // Nutzer ist ausgeloggt, trenne Listener und verstecke Punkte
+          if (invitationListener) {
+            invitationListener();
+            invitationListener = null;
+          }
+          updateNotificationDots(false);
+        }
+      });
+
+      // Starte den Menü-Toggle-Listener, sobald das DOM geladen ist
+      document.addEventListener('DOMContentLoaded', setupNavToggle);
+    </script>
 
 </body>
 </html>

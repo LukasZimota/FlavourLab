@@ -13,6 +13,14 @@ let currentTargetDate = null;
 let tempSelectedRecipe = null;
 let selectedCookbookId = 'all'; // Filter für das Modal
 
+// --- START: NEUE Emoji-Funktion ---
+const PLACEHOLDER_EMOJIS = ['🍽️', '🍳', '🥣', '🥗', '🍲', '🥑']; 
+const getRandomPlaceholder = () => {
+    // Wählt ein zufälliges Emoji aus der Liste
+    return PLACEHOLDER_EMOJIS[Math.floor(Math.random() * PLACEHOLDER_EMOJIS.length)];
+};
+// --- ENDE: NEUE Emoji-Funktion ---
+
 // --- DOM-Elemente holen ---
 const loader = document.getElementById('loader');
 const navbar = document.querySelector('.navbar');
@@ -367,7 +375,7 @@ const updateRecipeListInModal = () => {
     displayRecipesInModal(recipesToShow);
 };
 
-// --- Zeigt Rezepte im Modal an (mit Bild) (unverändert) ---
+// --- Zeigt Rezepte im Modal an (mit Bild) (GEÄNDERT) ---
 const displayRecipesInModal = (recipes) => {
     if (!recipeSelectList) return;
     recipeSelectList.innerHTML = '';
@@ -386,10 +394,14 @@ const displayRecipesInModal = (recipes) => {
         div.className = 'recipe-select-item'; 
         div.dataset.recipeId = recipe.id;
         
-        let imgHtml = '<div class="recipe-select-img-placeholder"></div>';
+        // --- START ÄNDERUNG (Zufalls-Emoji) ---
+        // Wähle ein zufälliges Emoji, statt das statische CSS-Emoji zu verwenden
+        let imgHtml = `<div class="recipe-select-img-placeholder">${getRandomPlaceholder()}</div>`;
         if (recipe.imageUrl) { 
             imgHtml = `<img src="${recipe.imageUrl}" alt="${recipe.title}" class="recipe-select-img" loading="lazy">`; 
         }
+        // --- ENDE ÄNDERUNG ---
+
         div.innerHTML = ` ${imgHtml} <span class="recipe-select-title">${recipe.title}</span> `;
         recipeSelectList.appendChild(div);
     });
@@ -506,7 +518,7 @@ const listenToPlannedRecipesForWeek = () => {
     });
 };
 
-// --- Funktion zum Anzeigen der Pläne pro Tag (unverändert) ---
+// --- Funktion zum Anzeigen der Pläne pro Tag (GEÄNDERT) ---
 const displayPlannedRecipesForDay = (dateKey) => {
     const slotContainer = document.getElementById(`slots-container-${dateKey}`);
     if (!slotContainer) return; // Tag ist nicht (mehr) im DOM
@@ -528,10 +540,14 @@ const displayPlannedRecipesForDay = (dateKey) => {
             
             let recipesHtml = '';
             recipesForMeal.forEach(plan => {
-                let imgHtml = '<div class="planned-recipe-img-placeholder"></div>';
+                
+                // --- START ÄNDERUNG (Zufalls-Emoji) ---
+                let imgHtml = `<div class="planned-recipe-img-placeholder">${getRandomPlaceholder()}</div>`;
                 if (plan.imageUrl) { 
                     imgHtml = `<img src="${plan.imageUrl}" alt="${plan.title}" class="planned-recipe-img" loading="lazy">`; 
                 }
+                // --- ENDE ÄNDERUNG ---
+
                 recipesHtml += `
                     <li class="planned-recipe-item">
                         ${imgHtml}

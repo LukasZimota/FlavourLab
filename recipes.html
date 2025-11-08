@@ -16,17 +16,29 @@
     <header class="navbar content-hidden">
         <div class="navbar-container">
             <span class="navbar-brand">Flavour Lab</span>
-            <nav class="navbar-tabs">
-                <ul>
-                    <li><a href="dashboard.html" class="active">Kochbücher</a></li>
-                    <li><a href="planner.html">Wochenplaner</a></li>
-                    <li><a href="shopping-list.html">Einkaufsliste</a></li>
-                    <li><a href="account.html">Konto</a></li>
-                </ul>
-            </nav>
+            
+            <button id="nav-toggle-btn" class="nav-toggle-btn" aria-label="Menü öffnen" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span id="nav-toggle-notification" class_name="nav-toggle-notification-dot notification-dot-hidden"></span>
+            </button>
         </div>
     </header>
 
+    <nav id="nav-menu" class="navbar-tabs">
+        <ul>
+            <li><a href="dashboard.html" class="active">📚 Kochbücher</a></li>
+            <li><a href="planner.html">📅 Wochenplaner</a></li>
+            <li><a href="shopping-list.html">🛒 Einkaufsliste</a></li>
+            <li>
+                <a href="account.html">
+                    👤 Konto
+                    <span id="nav-account-notification" class="nav-menu-notification-dot notification-dot-hidden"></span>
+                </a>
+            </li>
+        </ul>
+    </nav>
     <main class="main-content content-hidden">
         <div class="recipe-container">
             <a href="dashboard.html" class="back-link">Zurück zu den Kochbüchern</a>
@@ -145,6 +157,85 @@
 
     <script type="module" src="./firebase-config.js"></script>
     <script type="module" src="./recipes.js"></script>
+
+    <script type="module">
+      // Importiere auth und db, da wir sie hier brauchen
+      import { auth, db } from './firebase-config.js';
+
+      // Globale Variable für den Listener, damit wir ihn trennen können
+      let invitationListener = null;
+
+      // Funktion zum Umschalten des Menüs
+      const setupNavToggle = () => {
+        const navToggleBtn = document.getElementById('nav-toggle-btn');
+        if (navToggleBtn) {
+          navToggleBtn.addEventListener('click', () => {
+            document.body.classList.toggle('nav-open');
+            const isExpanded = navToggleBtn.getAttribute('aria-expanded') === 'true';
+            navToggleBtn.setAttribute('aria-expanded', !isExpanded);
+          });
+        }
+      };
+
+      // Funktion zum Anzeigen/Verstecken der Punkte
+      const updateNotificationDots = (hasInvites) => {
+        const toggleDot = document.getElementById('nav-toggle-notification');
+        const menuDot = document.getElementById('nav-account-notification');
+        
+        // Dieser Punkt existiert NUR auf account.html, aber wir suchen trotzdem danach
+        const accountPageDot = document.getElementById('account-invites-notification');
+
+        if (hasInvites) {
+          if (toggleDot) toggleDot.classList.remove('notification-dot-hidden');
+          if (menuDot) menuDot.classList.remove('notification-dot-hidden');
+          if (accountPageDot) accountPageDot.classList.remove('notification-dot-hidden');
+        } else {
+          if (toggleDot) toggleDot.classList.add('notification-dot-hidden');
+          if (menuDot) menuDot.classList.add('notification-dot-hidden');
+          if (accountPageDot) accountPageDot.classList.add('notification-dot-hidden');
+        }
+      };
+
+      // Funktion, die auf neue Einladungen hört
+      const listenForInvites = (userId) => {
+        // Trenne alten Listener, falls vorhanden
+        if (invitationListener) {
+          invitationListener();
+        }
+
+        // Erstelle die Echtzeit-Query
+        const invitesQuery = db.collection("invitations")
+            .where("toUserId", "==", userId)
+            .where("status", "==", "pending");
+
+        // Starte den Echtzeit-Listener
+        invitationListener = invitesQuery.onSnapshot((snapshot) => {
+            console.log(`Notification-Check: ${snapshot.size} Einladungen gefunden.`);
+            updateNotificationDots(!snapshot.empty); // Zeige/verstecke Punkte
+        }, (error) => {
+            console.error("Fehler im Benachrichtigungs-Listener:", error);
+            updateNotificationDots(false); // Bei Fehler sicherheitshalber verstecken
+        });
+      };
+
+      // Auth-Wächter, der alles startet
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          // Nutzer ist eingeloggt, starte den Listener
+          listenForInvites(user.uid);
+        } else {
+          // Nutzer ist ausgeloggt, trenne Listener und verstecke Punkte
+          if (invitationListener) {
+            invitationListener();
+            invitationListener = null;
+          }
+          updateNotificationDots(false);
+        }
+      });
+
+      // Starte den Menü-Toggle-Listener, sobald das DOM geladen ist
+      document.addEventListener('DOMContentLoaded', setupNavToggle);
+    </script>
 
 </body>
 </html>

@@ -11,20 +11,30 @@ let currentUser;
 let loader, navbar, mainContent;
 let dateSelectionList, generateBtn, resultsList, listMessage;
 let dateSelectorContainer, editDatesBtn;
-// NEU: DOM-Elemente für das Info-Modal
+// Info-Modal Elemente
 let infoModal, infoModalCloseBtn, infoModalTitle, infoModalList;
+// Add-Item Modal Elemente
+let btnOpenAddItemModal, addItemModal, addItemCloseBtn, addItemForm, addItemInput;
+// NEU: Druck-Knopf
+let btnPrintList;
 
+
+// --- Hilfsfunktion für IDs ---
+const getRandomId = (text) => `item-${text.replace(/[^a-zA-Z0-9]/g, '-')}-${Math.floor(Math.random() * 10000)}`;
 
 // --- Funktion zum Anzeigen des Inhalts ---
 const showContent = () => {
     if (loader) loader.style.display = 'none';
     if (navbar) navbar.classList.remove('content-hidden');
     if (mainContent) mainContent.classList.remove('content-hidden');
+    
+    // Zeige den "Plus"-Knopf nur, wenn die Liste geladen ist
+    if (btnOpenAddItemModal) btnOpenAddItemModal.classList.remove('content-hidden');
 };
 
 // --- Initialisierung ---
 const init = () => {
-    console.log("Shopping List Init Start (Version 44 - Klick-Modal)");
+    console.log("Shopping List Init Start (Version 47 - Print Button)");
     
     // --- DOM-Elemente HIER HOLEN ---
     loader = document.getElementById('loader');
@@ -36,18 +46,29 @@ const init = () => {
     listMessage = document.getElementById('shopping-list-message');
     dateSelectorContainer = document.getElementById('date-selector-container');
     editDatesBtn = document.getElementById('btn-edit-dates');
-    // NEU: Info-Modal Elemente
+    // Info-Modal Elemente
     infoModal = document.getElementById('info-modal');
     infoModalCloseBtn = document.getElementById('info-modal-close-btn');
     infoModalTitle = document.getElementById('info-modal-title');
     infoModalList = document.getElementById('info-modal-list');
+    // Add-Item Modal Elemente
+    btnOpenAddItemModal = document.getElementById('btn-open-add-item-modal');
+    addItemModal = document.getElementById('add-item-modal');
+    addItemCloseBtn = document.getElementById('add-item-close-btn');
+    addItemForm = document.getElementById('add-item-form');
+    addItemInput = document.getElementById('add-item-input');
+    // NEU: Druck-Knopf
+    btnPrintList = document.getElementById('btn-print-list');
     // --- ENDE DOM-Elemente holen ---
 
-    // Sicherheitscheck
-    if (!dateSelectionList || !generateBtn || !resultsList || !listMessage || !dateSelectorContainer || !editDatesBtn || !loader || !infoModal) {
+    // Sicherheitscheck (erweitert)
+    if (!dateSelectionList || !generateBtn || !resultsList || !listMessage || !dateSelectorContainer || !editDatesBtn || !loader || !infoModal || !btnOpenAddItemModal || !addItemModal || !btnPrintList) {
         console.error("FEHLER: Wichtige HTML-Elemente für Einkaufsliste fehlen!");
         return;
     }
+    
+    // "Plus"-Knopf am Anfang verstecken
+    btnOpenAddItemModal.classList.add('content-hidden');
 
     // Auth Wächter
     auth.onAuthStateChanged((user) => {
@@ -56,9 +77,9 @@ const init = () => {
             console.log("Shopping List: Nutzer eingeloggt.");
             showContent();
             
-            // Bugfix (von Ansatz 35): Immer Tage erstellen, dann laden
+            // Immer Tage erstellen, dann laden
             displayDateSelection(); 
-            loadListFromStorage();
+            loadListFromStorage(); 
             
         } else {
             currentUser = null;
@@ -69,6 +90,8 @@ const init = () => {
     // Event Listener für Knöpfe
     if (generateBtn) generateBtn.addEventListener('click', generateList);
     if (editDatesBtn) editDatesBtn.addEventListener('click', editDates);
+    // NEU: Druck-Knopf Listener
+    if (btnPrintList) btnPrintList.addEventListener('click', () => window.print());
 
     // Klick-Listener für Datums-Buttons
     if (dateSelectionList) {
@@ -94,13 +117,16 @@ const init = () => {
                 return; 
             }
 
-            // NEU: Fall 2: Klick auf das Info-Symbol -> Modal öffnen
+            // Fall 2: Klick auf das Info-Symbol -> Modal öffnen
             const infoBtn = target.closest('.info-trigger-btn');
             if (infoBtn) {
                 e.preventDefault();
                 const ingredientName = infoBtn.dataset.ingredient;
-                const sources = infoBtn.dataset.sources.split('|'); // Array zurückholen
-                openInfoModal(ingredientName, sources);
+                // Nur ausführen, wenn sources vorhanden (custom items haben das nicht)
+                if (infoBtn.dataset.sources) {
+                    const sources = infoBtn.dataset.sources.split('|'); // Array zurückholen
+                    openInfoModal(ingredientName, sources);
+                }
                 return;
             }
 
@@ -117,16 +143,26 @@ const init = () => {
         });
     }
     
-    // NEU: Listener zum Schließen des Info-Modals
+    // Listener zum Schließen des Info-Modals
     if (infoModalCloseBtn) infoModalCloseBtn.addEventListener('click', closeInfoModal);
     if (infoModal) infoModal.addEventListener('click', (e) => {
         if (e.target === infoModal) { // Klick auf den Overlay-Hintergrund
             closeInfoModal();
         }
     });
+    
+    // Listener für das Add-Item-Modal
+    if (btnOpenAddItemModal) btnOpenAddItemModal.addEventListener('click', openAddItemModal);
+    if (addItemCloseBtn) addItemCloseBtn.addEventListener('click', closeAddItemModal);
+    if (addItemModal) addItemModal.addEventListener('click', (e) => {
+        if (e.target === addItemModal) { // Klick auf den Overlay-Hintergrund
+            closeAddItemModal();
+        }
+    });
+    if (addItemForm) addItemForm.addEventListener('submit', handleAddItemSubmit);
 };
 
-// --- NEUE FUNKTIONEN: Info-Modal steuern ---
+// --- Info-Modal steuern ---
 const openInfoModal = (ingredientName, sources) => {
     if (!infoModal || !infoModalTitle || !infoModalList) return;
     
@@ -145,7 +181,65 @@ const openInfoModal = (ingredientName, sources) => {
 const closeInfoModal = () => {
     if (infoModal) infoModal.classList.add('modal-hidden');
 };
-// --- ENDE NEUE FUNKTIONEN ---
+
+// --- Add-Item-Modal steuern ---
+const openAddItemModal = () => {
+    if (addItemModal) addItemModal.classList.remove('modal-hidden');
+    if (addItemInput) {
+        addItemInput.value = ''; // Eingabefeld leeren
+        addItemInput.focus(); // Fokus auf das Eingabefeld
+    }
+};
+
+const closeAddItemModal = () => {
+    if (addItemModal) addItemModal.classList.add('modal-hidden');
+};
+
+// --- Item aus Pop-up hinzufügen ---
+const handleAddItemSubmit = (e) => {
+    e.preventDefault(); // Formular-Neuladen verhindern
+    if (!addItemInput) return;
+    
+    const itemName = addItemInput.value.trim();
+    if (itemName) {
+        addCustomItemToList(itemName); // Hauptlogik
+        closeAddItemModal();
+    }
+};
+
+// --- Logik, um Item zur "Sonstiges"-Kategorie hinzuzufügen ---
+const addCustomItemToList = (itemName) => {
+    if (!resultsList) return;
+
+    // 1. Lade die AKTUELLE Liste (inkl. generierter Items)
+    let categories = loadCategoriesFromStorage();
+    
+    // 2. Erstelle oder finde die "Sonstiges"-Kategorie
+    if (!categories["Sonstiges"]) {
+        categories["Sonstiges"] = [];
+        console.log("Erstelle 'Sonstiges'-Kategorie im Objekt.");
+    }
+
+    // 3. Füge das neue Item hinzu (mit 'sources'-Attribut für Kompatibilität)
+    const newItem = {
+        fullName: itemName,
+        sources: ["(Selbst hinzugefügt)"] // Platzhalter
+    };
+    
+    // Füge es AN DEN ANFANG der "Sonstiges"-Liste hinzu
+    categories["Sonstiges"].unshift(newItem);
+
+    // 4. Zeige die (jetzt modifizierte) Liste an.
+    displayShoppingList(categories); 
+    
+    // 5. (Optional) Scrolle zur "Sonstiges"-Kategorie
+    const categorySection = resultsList.querySelector(`[data-category="Sonstiges"]`);
+    if (categorySection) {
+        // Stelle sicher, dass sie offen ist
+        categorySection.querySelector('.category-content').classList.add('open');
+        categorySection.querySelector('.category-toggle-icon').classList.add('rotated');
+    }
+};
 
 
 // --- Funktion: Zeigt die nächsten 7 Tage als Buttons an ---
@@ -204,6 +298,7 @@ const editDates = () => {
     editDatesBtn.style.display = 'none';
     resultsList.innerHTML = '';
     listMessage.textContent = '';
+    if(btnPrintList) btnPrintList.style.display = 'none'; // Druck-Knopf verstecken
     try {
         localStorage.removeItem('savedShoppingList');
         localStorage.removeItem('savedListMessage');
@@ -226,6 +321,7 @@ const callGetShoppingList = async (startDate, endDate) => {
         const categories = result.data.categories; 
         console.log("[TEST 7] Antwort vom Server (kategorisiert):", categories);
         
+        // Rufe displayShoppingList auf. Diese speichert die Liste automatisch.
         displayShoppingList(categories); 
 
     } catch (error) {
@@ -234,14 +330,17 @@ const callGetShoppingList = async (startDate, endDate) => {
     }
 };
 
-// --- Funktion zur Anzeige der finalen Liste (JETZT MIT INFO-BUTTON-DATEN) ---
-const displayShoppingList = (categories, message) => {
-    console.log("[TEST 8] 'displayShoppingList' wird aufgerufen (Akkordeon-Version).");
-    if (!resultsList || !listMessage) return;
+// --- Funktion zur Anzeige der finalen Liste (SPEICHERT JETZT IMMER) ---
+const displayShoppingList = (categories, customMessage = null) => {
+    console.log("[TEST 8] 'displayShoppingList' wird aufgerufen.");
+    if (!resultsList || !listMessage || !btnPrintList) return;
     resultsList.innerHTML = '';
     
     if (!categories || Object.keys(categories).length === 0) {
-        listMessage.textContent = message || "Keine Zutaten in den ausgewählten Rezepten gefunden.";
+        listMessage.textContent = customMessage || "Keine Zutaten in den ausgewählten Rezepten gefunden.";
+        btnPrintList.style.display = 'none'; // Druck-Knopf verstecken
+        // Speichere auch den leeren Zustand!
+        saveCategoriesToStorage({}, customMessage || "Keine Zutaten gefunden.");
         return;
     }
 
@@ -252,16 +351,22 @@ const displayShoppingList = (categories, message) => {
     catch (e) { console.error("Fehler Laden Check-Status:", e); }
 
     const categoryNames = Object.keys(categories).sort();
+    
+    // Verschiebe "Sonstiges" ans Ende, falls es existiert
+    if (categoryNames.includes("Sonstiges")) {
+        categoryNames.splice(categoryNames.indexOf("Sonstiges"), 1);
+        categoryNames.push("Sonstiges");
+    }
 
     for (const categoryName of categoryNames) {
         const ingredients = categories[categoryName];
-        if (ingredients.length > 0) {
+        if (ingredients && ingredients.length > 0) {
             totalIngredients += ingredients.length;
             
             const categoryDiv = document.createElement('div');
             categoryDiv.className = 'category-section'; 
+            categoryDiv.dataset.category = categoryName; 
             
-            // Header (Standardmäßig GEÖFFNET)
             const header = document.createElement('div');
             header.className = 'category-header';
             header.innerHTML = `
@@ -269,27 +374,24 @@ const displayShoppingList = (categories, message) => {
                 <span class="category-toggle-icon rotated">▼</span>
             `;
             
-            // Content (Standardmäßig GEÖFFNET)
             const content = document.createElement('div');
             content.className = 'category-content open'; 
             
-            const randomId = (text) => `item-${text.replace(/[^a-zA-Z0-9]/g, '-')}-${Math.floor(Math.random() * 10000)}`;
-
             let itemsHtml = ingredients.map(item => {
-                const itemId = randomId(item.fullName);
+                const itemId = getRandomId(item.fullName);
                 const isChecked = savedCheckedItems.includes(item.fullName);
                 
-                // --- NEU: Info-Button HTML ---
-                // Wir speichern die Daten im Button, um sie beim Klick zu lesen
-                // Wir nutzen '|' als Trennzeichen für die Rezept-Liste
-                const infoBtnHtml = `
-                    <button class="info-trigger-btn" 
-                            data-ingredient="${item.fullName}" 
-                            data-sources="${item.sources.join('|')}">
-                        i
-                    </button>
-                `;
-                // --- ENDE NEU ---
+                let infoBtnHtml = '';
+                // Zeige Info-Knopf nur, wenn 'sources' existiert UND nicht der Platzhalter ist
+                if (item.sources && item.sources.length > 0 && item.sources[0] !== "(Selbst hinzugefügt)") {
+                    infoBtnHtml = `
+                        <button class="info-trigger-btn" 
+                                data-ingredient="${item.fullName}" 
+                                data-sources="${item.sources.join('|')}">
+                            i
+                        </button>
+                    `;
+                }
                 
                 return `
                 <li class="shopping-list-item ${isChecked ? 'checked' : ''}" data-full-name="${item.fullName}">
@@ -307,31 +409,39 @@ const displayShoppingList = (categories, message) => {
         }
     }
     
-    const messageText = message || `Insgesamt ${totalIngredients} Zutaten-Einträge gefunden:`;
+    // BERECHNE NACHRICHT NEU (wichtig für custom items)
+    const messageText = customMessage || `Insgesamt ${totalIngredients} Zutaten-Einträge gefunden:`;
     listMessage.textContent = messageText;
 
-    try {
-        localStorage.setItem('savedShoppingList', JSON.stringify(categories)); 
-        localStorage.setItem('savedListMessage', messageText);
-        console.log("Liste im localStorage gespeichert.");
-    } catch (e) { console.error("Fehler Speichern localStorage:", e); }
+    // Zeige den Druck-Knopf, da wir eine Liste haben
+    btnPrintList.style.display = 'block';
+
+    // SPEICHERE ALLES (neue Liste UND neue Nachricht)
+    saveCategoriesToStorage(categories, messageText);
 };
 
 // --- Funktion zum Laden der Liste aus dem Storage ---
 const loadListFromStorage = () => {
+    if (!btnPrintList) return false;
     try {
-        const savedList = localStorage.getItem('savedShoppingList');
+        const categories = loadCategoriesFromStorage();
         const savedMessage = localStorage.getItem('savedListMessage');
-        if (savedList && savedMessage) {
+        
+        if (savedMessage) { 
             console.log("Gespeicherte Einkaufsliste gefunden.");
-            const categories = JSON.parse(savedList); 
             
             displayShoppingList(categories, savedMessage); 
             
             dateSelectorContainer.classList.add('collapsed');
             generateBtn.style.display = 'none';
             editDatesBtn.style.display = 'block';
-            return true; // Wichtig für den Bugfix
+            
+            // Stelle sicher, dass der Druck-Knopf angezeigt wird, wenn die Liste nicht leer ist
+            if (Object.keys(categories).length > 0) {
+                btnPrintList.style.display = 'block';
+            }
+            
+            return true;
         }
     } catch (e) {
         console.error("Fehler Laden aus localStorage:", e);
@@ -339,18 +449,44 @@ const loadListFromStorage = () => {
         localStorage.removeItem('savedListMessage');
         localStorage.removeItem('savedCheckedItems');
     }
+    
     console.log("Keine gespeicherte Liste gefunden.");
-    return false; // Wichtig für den Bugfix
+    btnPrintList.style.display = 'none'; // Verstecke Druck-Knopf
+    return false;
 };
+
+// --- NEUE Storage Helper-Funktionen ---
+const loadCategoriesFromStorage = () => {
+    try {
+        const savedList = localStorage.getItem('savedShoppingList');
+        if (savedList) {
+            return JSON.parse(savedList);
+        }
+    } catch (e) {
+        console.error("Fehler Laden der Kategorien aus Storage:", e);
+        return {};
+    }
+    return {}; // Standard-Rückgabe
+};
+
+const saveCategoriesToStorage = (categories, message) => {
+    try {
+        localStorage.setItem('savedShoppingList', JSON.stringify(categories)); 
+        if (message) {
+            localStorage.setItem('savedListMessage', message);
+        }
+        console.log("Liste im localStorage gespeichert.");
+    } catch (e) { console.error("Fehler Speichern localStorage:", e); }
+};
+// --- ENDE Storage Helper ---
+
 
 // --- Funktion zum Speichern des "Abgehakt"-Status (KORRIGIERT) ---
 const saveCheckedState = () => {
     if (!resultsList) return;
     const checkedItems = [];
-    // Finde die 'checked' KLASSE
     const allItems = resultsList.querySelectorAll('li.shopping-list-item.checked'); 
     allItems.forEach(li => {
-        // Speichere den 'fullName' aus dem data-Attribut, nicht den TextContent
         if (li.dataset.fullName) {
             checkedItems.push(li.dataset.fullName); 
         }

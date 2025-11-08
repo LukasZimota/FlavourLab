@@ -58,26 +58,36 @@
 .planned-recipe-item:hover { background-color: #f0f0f0; }
 .planned-recipe-img, .planned-recipe-img-placeholder { width: 30px; height: 30px; border-radius: 3px; margin-right: 0.5rem; object-fit: cover; flex-shrink: 0; }
 .planned-recipe-img-placeholder { background-color: #eee; display: flex; justify-content: center; align-items: center; color: #bbb; font-size: 1rem; }
-.planned-recipe-img-placeholder::before { content: '🍽️'; }
+
+/* --- START ÄNDERUNG --- */
+.planned-recipe-img-placeholder::before { 
+    content: ''; /* STATISCHES EMOJI ENTFERNT (kommt jetzt von JS) */
+}
+/* --- ENDE ÄNDERUNG --- */
+
 .planned-recipe-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; margin-right: 0.5rem; }
 .remove-planned { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 1.1rem; padding: 0 0.2rem; line-height: 1; flex-shrink: 0; opacity: 0; transition: opacity 0.2s ease-in-out; }
 .planned-recipe-item:hover .remove-planned { opacity: 1; }
 .remove-planned:hover { color: #c70000; }
 
-/* NEU: Der EINE "Rezept hinzufügen"-Knopf pro Tag */
+/* Moderner "Rezept hinzufügen"-Knopf */
 .add-recipe-to-day-btn-main {
-    background-color: #e9e9ed;
-    color: #555;
+    background-color: #007aff; /* Blaue Hauptfarbe */
+    color: white; /* Weißer Text */
     border: none;
-    padding: 0.75rem;
+    padding: 0.85rem; /* Etwas mehr Padding */
     cursor: pointer;
-    font-weight: 500;
-    margin-top: 0.5rem;
+    font-weight: 600; /* Fetterer Text */
+    margin-top: auto; /* Schiebt ihn nach unten */
     transition: background-color 0.2s;
     width: 100%;
-    border-top: 1px solid #eee;
+    border-radius: 0 0 7px 7px; /* Passt sich den Ecken der Karte an */
 }
-.add-recipe-to-day-btn-main:hover { background-color: #dcdce1; color: #007aff; }
+.add-recipe-to-day-btn-main:hover { 
+    background-color: #0056b3; /* Dunkleres Blau beim Hover */
+    color: white; /* Stellt sicher, dass der Text weiß bleibt */
+}
+
 /* Versteckt den Button, wenn der Tag alt ist */
 .past-day .add-recipe-to-day-btn-main {
     display: none;
@@ -97,7 +107,13 @@
 .recipe-select-item:hover { background-color: #f0f0f0; }
 .recipe-select-img, .recipe-select-img-placeholder { width: 40px; height: 40px; border-radius: 4px; margin-right: 0.75rem; object-fit: cover; flex-shrink: 0; }
 .recipe-select-img-placeholder { background-color: #eee; display: flex; justify-content: center; align-items: center; color: #bbb; font-size: 1.5rem; }
-.recipe-select-img-placeholder::before { content: '🍽️'; }
+
+/* --- START ÄNDERUNG --- */
+.recipe-select-img-placeholder::before { 
+    content: ''; /* STATISCHES EMOJI ENTFERNT (kommt jetzt von JS) */
+}
+/* --- ENDE ÄNDERUNG --- */
+
 .recipe-select-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* --- Stile für Mahlzeit-Auswahl-Pop-up --- */

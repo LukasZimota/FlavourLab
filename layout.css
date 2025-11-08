@@ -1,15 +1,130 @@
 /* --- Globale Layout-Stile --- */
 * { box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f4f8; margin: 0; padding-top: 80px; }
+body { 
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    background-color: #f4f4f8; 
+    margin: 0; 
+    padding-top: 80px; 
+    /* Verhindert horizontales Scrollen, wenn das Menü offen ist */
+    overflow-x: hidden;
+}
 
-/* --- Navigationsleiste --- */
-.navbar { background-color: #ffffff; border-bottom: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.05); position: fixed; top: 0; left: 0; width: 100%; height: 70px; padding: 0 2rem; z-index: 1000; }
-.navbar-container { max-width: 1200px; height: 100%; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-.navbar-brand { font-size: 1.5rem; font-weight: bold; color: #333; }
-.navbar-tabs ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 1rem; }
-.navbar-tabs a { display: block; padding: 0.5rem 1rem; text-decoration: none; color: #555; font-weight: 500; border-radius: 6px; transition: background-color 0.2s; }
-.navbar-tabs a:hover { background-color: #f0f0f0; }
-.navbar-tabs a.active { background-color: #007aff; color: white; }
+/* --- Navigationsleiste (Container) --- */
+.navbar { 
+    background-color: #ffffff; 
+    border-bottom: 1px solid #ddd; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100%; 
+    height: 70px; 
+    padding: 0 2rem; 
+    z-index: 1000; 
+}
+.navbar-container { 
+    max-width: 1200px; 
+    height: 100%; 
+    margin: 0 auto; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+.navbar-brand { 
+    font-size: 1.5rem; 
+    font-weight: bold; 
+    color: #333; 
+}
+
+/* --- Hamburger Menü-Knopf --- */
+.nav-toggle-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 24px;
+    padding: 0;
+    z-index: 1010; /* Über der Navbar, unter dem Menü */
+    position: relative; /* Wichtig für den Benachrichtigungs-Punkt */
+}
+.nav-toggle-btn span {
+    width: 30px;
+    height: 3px;
+    background-color: #333;
+    border-radius: 2px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* --- Dropdown-Menü (vorher .navbar-tabs) --- */
+.navbar-tabs {
+    /* Positionierung als Dropdown */
+    position: fixed;
+    top: 70px; /* Direkt unter der Navbar */
+    left: 0;
+    width: 100%;
+    background-color: #ffffff;
+    box-shadow: 0 8px 10px rgba(0,0,0,0.05);
+    z-index: 1005; /* Unter dem Knopf, über dem Inhalt */
+
+    /* Standardmäßig versteckt */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0.3s;
+}
+.navbar-tabs ul { 
+    list-style: none; 
+    margin: 0; 
+    padding: 0; 
+    /* Hält die Links zentriert (wie der Rest der Seite) */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.5rem 0; /* Kleiner Abstand oben/unten */
+}
+
+/* Links im Dropdown */
+.navbar-tabs a { 
+    display: block; 
+    padding: 1rem 2rem; /* Selbes Padding wie .navbar (links/rechts) */
+    text-decoration: none; 
+    color: #333; /* Dunklere Schrift für bessere Lesbarkeit */
+    font-weight: 500; 
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s;
+    position: relative; /* Wichtig für den Punkt-Abstand */
+}
+.navbar-tabs a:hover { 
+    background-color: #f5f5f5; 
+}
+.navbar-tabs a.active { 
+    background-color: #007aff; 
+    color: white; 
+}
+.navbar-tabs li:last-child a {
+    border-bottom: none; /* Letztes Element hat keine Linie */
+}
+
+
+/* --- "Offen"-Status (wird per JS auf <body> gesetzt) --- */
+body.nav-open .navbar-tabs {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+/* Animation des Hamburger-Knopfs zu einem "X" */
+body.nav-open .nav-toggle-btn span:nth-child(1) {
+    transform: rotate(45deg) translate(7px, 7px);
+}
+body.nav-open .nav-toggle-btn span:nth-child(2) {
+    opacity: 0;
+}
+body.nav-open .nav-toggle-btn span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -7px);
+}
+
 
 /* --- Hauptinhalts-Wrapper --- */
 .main-content { padding: 2rem; display: flex; justify-content: center; width: 100%; }
@@ -71,9 +186,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helve
 .modal-form label { font-weight: bold; color: #555; margin-bottom: -5px; }
 .modal-form input, .modal-form textarea { width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 4px; }
 
-/* --- HIER IST DER NEUE/KORRIGIERTE CSS-BLOCK --- */
-/* Gilt für ALLE Buttons direkt im Modal-Formular 
-   (z.B. der "Speichern"-Knopf im Kochbuch-Modal) */
+/* Gilt für ALLE Buttons direkt im Modal-Formular */
 .modal-form button {
     background-color: #34c759; /* Grün (Speichern) */
     color: white;
@@ -90,8 +203,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helve
 .modal-form button:hover {
     background-color: #2a9e48;
 }
-/* --- ENDE DES NEUEN BLOCKS --- */
-
 
 /* Speichern-Knopf (wird in recipes.css für das Rezept-Modal verwendet) */
 .modal-save-button {
@@ -101,3 +212,42 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helve
 /* Verstecken/Zeigen */
 .modal-hidden { opacity: 0; pointer-events: none; }
 .modal-hidden .modal-content { transform: scale(0.9); }
+
+
+/* --- NEU: Benachrichtigungs-Punkte --- */
+
+/* Versteck-Klasse */
+.notification-dot-hidden {
+    display: none !important;
+}
+
+/* Punkt für den Hamburger-Button */
+.nav-toggle-notification-dot {
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 10px;
+    height: 10px;
+    background-color: #ff3b30;
+    border-radius: 50%;
+    border: 2px solid #ffffff; /* Weißer Rand, damit er sich abhebt */
+}
+
+/* Punkt für Menü-Einträge (Dropdown & Kontoseite) */
+.nav-menu-notification-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: #ff3b30;
+    border-radius: 50%;
+    margin-left: 8px;
+    /* Vertikal zentrieren */
+    vertical-align: middle; 
+    margin-bottom: 2px;
+}
+
+/* Spezifische Anpassung für den Punkt im Account-Menü-Item */
+.account-menu-item span .nav-menu-notification-dot {
+    margin-left: 6px;
+    margin-bottom: 1px;
+}

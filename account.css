@@ -1,34 +1,48 @@
-/* --- Kontoseite --- */
 .account-container {
-    background-color: #ffffff;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     width: 100%;
-    max-width: 500px; 
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.account-container h2 {
+    margin-bottom: 0;
+}
+.logout-button {
+    background-color: #ff3b30;
+    color: white;
+    border: none;
+    padding: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    width: 100%;
+    transition: background-color 0.2s;
+    margin-top: 1rem;
+}
+.logout-button:hover {
+    background-color: #c70000;
 }
 
-/* Titel (z.B. "Hi, Alexander") */
-#account-title {
-    margin-top: 0;
-    color: #333;
-}
-
-/* --- Menü-Styling --- */
+/* Menü-Struktur (Box, Schatten etc.) */
 .account-menu {
-    margin-top: 2rem;
-    margin-bottom: 2rem;
-    border-top: 1px solid #eee;
-    border-bottom: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
 }
 
+/* Styling für die klickbaren DIVs (Daten, Statistik, Einladungen) */
 .account-menu-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
-    background-color: #ffffff;
-    border-bottom: 1px solid #eee;
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
     cursor: pointer;
     transition: background-color 0.2s;
 }
@@ -38,144 +52,101 @@
 .account-menu-item:hover {
     background-color: #f9f9f9;
 }
-.account-menu-item span:first-child {
+.account-menu-item span {
     font-weight: 500;
+    color: #333;
+    display: flex;
+    align-items: center;
 }
 .account-arrow {
-    width: 16px;
-    height: 16px;
-    color: #ccc;
-    transition: transform 0.2s ease-out;
-}
-.account-menu-item:hover .account-arrow {
-    transform: translateX(4px);
+    color: #c7c7cc;
 }
 
-/* --- Styling für Daten-Anzeige --- */
-.account-data-display {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
+/* * NEU: Styling für den Spenden-Link (<a>-Tag)
+ * Sorgt dafür, dass er wie ein .account-menu-item aussieht
+ */
+.account-menu-link {
+    text-decoration: none; /* Entfernt die Link-Unterstreichung */
 }
-.account-data-display h4 {
+.account-menu-link span {
+    color: #333; /* Stellt die normale Textfarbe sicher */
+}
+.account-menu-link .account-arrow {
+    color: #c7c7cc; /* Stellt die normale Icon-Farbe sicher */
+}
+/* ENDE: Neue Stile */
+
+
+/* Sektionen, die ein- und ausgeblendet werden */
+.account-data-display,
+.account-stats-display,
+.account-invites-display {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    padding: 1.5rem 1rem 1rem;
+}
+.account-data-display.hidden,
+.account-stats-display.hidden,
+.account-invites-display.hidden {
+    display: none;
+}
+.account-data-display h4,
+.account-stats-display h4,
+.account-invites-display h4 {
     margin-top: 0;
-    border-bottom: 1px solid #ddd;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #f0f0f0;
     padding-bottom: 0.5rem;
 }
-.account-data-display p {
-    margin-bottom: 0.5rem;
+.account-data-close-btn {
+    background: none;
+    border: none;
+    color: #007aff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    padding: 0.25rem;
 }
-.account-data-display p strong {
-    color: #555;
+.account-data-close-btn:hover {
+    text-decoration: underline;
 }
 
-/* --- NEU: Styling für Statistik-Anzeige --- */
-.account-stats-display {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
-.account-stats-display h4 {
-    margin-top: 0;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 0.5rem;
-}
+/* Statistik-Zeilen */
 .stat-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    font-size: 1rem;
-    padding: 0.75rem 0.25rem;
-    border-bottom: 1px solid #eee;
-}
-.stat-item:last-of-type {
-    border-bottom: none;
-}
-.stat-item span:first-child {
-    color: #555;
-    font-weight: 500;
+    padding: 0.5rem 0;
 }
 .stat-item span:last-child {
     font-weight: bold;
-    font-size: 1.1rem;
     color: #007aff;
 }
-/* --- ENDE NEU --- */
 
-
-/* Klasse zum Verstecken/Anzeigen */
-.hidden {
-    display: none;
-}
-
-/* "Zurück"-Knopf */
-.account-data-close-btn {
-    background: none;
-    border: 1px solid #aaa;
-    color: #555;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-top: 1rem;
-    font-weight: 500;
-}
-.account-data-close-btn:hover {
-    background-color: #f0f0f0;
-}
-
-/* Logout-Knopf */
-.logout-button {
-    padding: 0.75rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-    background-color: #ff3b30;
-    width: 100%;
-    margin-top: 1rem;
-}
-.logout-button:hover {
-    background-color: #c70000;
-}
-/* --- NEU: Styling für Einladungen --- */
-.account-invites-display {
-    background-color: #f9f9f9;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-}
-.account-invites-display h4 {
-    margin-top: 0;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 0.5rem;
+/* Einladungs-Liste */
+#invites-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 .invite-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 0.25rem;
-    border-bottom: 1px solid #eee;
+    padding: 0.75rem;
+    background-color: #f9f9f9;
+    border-radius: 6px;
 }
-.invite-item:last-of-type {
-    border-bottom: none;
+.invite-info {
+    flex-grow: 1;
 }
-.invite-item p { 
-    margin: 0; 
-    line-height: 1.4;
+.invite-info .cookbook-name {
+    font-weight: bold;
 }
-.invite-item p strong { 
-    color: #333; 
-    font-size: 1rem;
-}
-.invite-item p span { 
-    font-size: 0.9rem; 
-    color: #555; 
+.invite-info .sender-email {
+    font-size: 0.85rem;
+    color: #555;
+    margin-top: 2px;
 }
 .invite-actions {
     display: flex;
@@ -184,29 +155,17 @@
     margin-left: 1rem;
 }
 .invite-actions button {
-    border: none; 
-    padding: 0.5rem 0.8rem; 
+    border: none;
     border-radius: 6px;
-    cursor: pointer; 
-    font-weight: 500; 
-    font-size: 0.9rem;
-    transition: transform 0.1s ease;
+    padding: 0.5rem 0.75rem;
+    cursor: pointer;
+    font-weight: 500;
 }
-.invite-actions button:active {
-    transform: scale(0.95);
+.btn-accept-invite {
+    background-color: #34c759;
+    color: white;
 }
-.btn-accept { 
-    background-color: #34c759; 
-    color: white; 
+.btn-decline-invite {
+    background-color: #ff3b30;
+    color: white;
 }
-.btn-accept:hover {
-    background-color: #2a9e48;
-}
-.btn-decline { 
-    background-color: #ff3b30; 
-    color: white; 
-}
-.btn-decline:hover {
-    background-color: #c70000;
-}
-/* --- ENDE NEU --- */
