@@ -2,13 +2,16 @@ import { auth, db } from './firebase-config.js';
 
 // --- Globale Variablen ---
 let currentUser;
-let currentCookbookId; // Wird aus der URL geladen
-let currentRecipeId = null; // ID des Rezepts, das im "Anzeigen"-Modal offen ist
-let currentEditingRecipeId = null; // ID des Rezepts, das im "Bearbeiten"-Modal offen ist
+let currentCookbookId;
+let currentRecipeId = null;
+let currentEditingRecipeId = null;
 let ingredientsArray = [];
 let stepsArray = [];
 let currentRating = 0;
-let allCookbookRecipes = []; // Cache für alle Rezepte dieses Kochbuchs
+let currentServings = 4;
+let currentEditingIngredientIndex = null; // Hält den Index der Zutat, die bearbeitet wird
+let currentEditingStepIndex = null; // Hält den Index des Schritts, der bearbeitet wird
+let allCookbookRecipes = [];
 let currentFilters = { search: '', rating: 0, tags: [] };
 
 // --- DOM-Elemente (Deklaration) ---
@@ -18,6 +21,7 @@ let recipeModal, recipeModalCloseBtn, saveRecipeBtn, recipeModalTitle, modalReci
 let ingredientInput, addIngredientBtn, ingredientList;
 let stepInput, addStepBtn, stepList;
 let ratingGroup, ratingStars, modalRecipeNotes, tagSelectionGroup;
+let servingsGroup, servingButtons, customServingInput;
 let viewModal, viewModalCloseBtn, viewRecipeContent, editRecipeBtn, deleteRecipeBtn;
 let openFilterBtn, filterModal, filterModalCloseBtn, filterSearchInput, filterRatingGroup, filterRatingStars, clearRatingFilterBtn, filterTagGroup, applyFilterBtn;
 let activeFiltersDisplay;
@@ -30,7 +34,12 @@ const openCreateModal = () => {
     ingredientsArray = []; renderIngredientList();
     stepsArray = []; renderStepsList();
     setRating(0);
+    setServings(4); // Setzt 4 als aktiv
+    customServingInput.value = ''; // Leert das "Eigene"-Feld
     if (tagSelectionGroup) { tagSelectionGroup.querySelectorAll('.tag-btn').forEach(btn => btn.classList.remove('active')); }
+    
+    closeRecipeModalCleanup(); // Bearbeiten-Status zurücksetzen
+    
     recipeModal.classList.remove('modal-hidden');
 };
 
@@ -39,8 +48,9 @@ const openEditModal = async () => {
     currentEditingRecipeId = currentRecipeId;
     recipeModalTitle.textContent = 'Rezept bearbeiten';
 
+    closeRecipeModalCleanup(); // Bearbeiten-Status zurücksetzen
+
     try {
-        // *** NEUER PFAD ***
         const docRef = db.collection('cookbooks').doc(currentCookbookId)
                          .collection('recipes').doc(currentEditingRecipeId);
         const docSnap = await docRef.get();
@@ -53,14 +63,29 @@ const openEditModal = async () => {
             ingredientsArray = data.ingredients || []; renderIngredientList();
             stepsArray = data.instructions || []; renderStepsList();
             setRating(data.rating || 0);
+
+            const savedServings = data.servings || 4; 
+            
+            // NEU: Logik für [1, 2, 4]
+            const presetServings = [1, 2, 4];
+            if (presetServings.includes(savedServings)) {
+                setServings(savedServings); // Klickt den Button
+                customServingInput.value = ''; // Leert das Feld
+            } else {
+                // Es ist eine EIGENE Zahl
+                setServings(null); // Deaktiviert alle Buttons
+                customServingInput.value = savedServings; // Füllt das Feld
+                currentServings = savedServings; // Setzt den globalen Wert
+            }
+
             const savedTags = data.tags || [];
             if (tagSelectionGroup) {
                 tagSelectionGroup.querySelectorAll('.tag-btn').forEach(btn => {
                     btn.classList.toggle('active', savedTags.includes(btn.dataset.tag));
                 });
             }
-            closeViewModal(); // Schließe Anzeigemodal
-            recipeModal.classList.remove('modal-hidden'); // Öffne Bearbeitenmodal
+            closeViewModal(); 
+            recipeModal.classList.remove('modal-hidden'); 
         } else { 
             alert("Fehler: Rezept nicht gefunden."); 
             currentEditingRecipeId = null; 
@@ -72,19 +97,39 @@ const openEditModal = async () => {
     }
 };
 
+// Setzt den Bearbeiten-Status der Listen zurück
+const closeRecipeModalCleanup = () => {
+    // Zutaten-Bearbeitung zurücksetzen
+    currentEditingIngredientIndex = null;
+    if (addIngredientBtn) {
+        addIngredientBtn.textContent = '+';
+        addIngredientBtn.classList.remove('edit-mode');
+    }
+    if (ingredientInput) ingredientInput.value = '';
+
+    // Schritte-Bearbeitung zurücksetzen
+    currentEditingStepIndex = null;
+    if (addStepBtn) {
+        addStepBtn.textContent = '+';
+        addStepBtn.classList.remove('edit-mode');
+    }
+    if (stepInput) stepInput.value = '';
+};
+
 const closeRecipeModal = () => {
     recipeModal.classList.add('modal-hidden');
     currentEditingRecipeId = null;
+    closeRecipeModalCleanup(); // Immer aufräumen
 };
 
 const openViewModal = async (recipeId) => {
+    // ... (Diese Funktion ist unverändert)
     if (!currentUser || !currentCookbookId) return;
     currentRecipeId = recipeId;
     viewRecipeContent.innerHTML = '<h3>Lade Rezept...</h3>';
     viewModal.classList.remove('modal-hidden');
 
     try {
-        // *** NEUER PFAD ***
         const doc = await db.collection('cookbooks').doc(currentCookbookId)
                             .collection('recipes').doc(recipeId).get();
         
@@ -95,12 +140,16 @@ const openViewModal = async (recipeId) => {
         
         const recipe = doc.data();
         
-        // (Rest der Funktion zum Anzeigen des HTMLs ist unverändert)
         let ratingHtml = `<div class="display-rating" data-rating="${recipe.rating || 0}">`;
         if (recipe.rating && recipe.rating > 0) {
             for (let i = 1; i <= 5; i++) { ratingHtml += (i <= recipe.rating) ? '★' : '☆'; }
         } else { ratingHtml += 'Keine Bewertung'; }
         ratingHtml += '</div>';
+
+        let servingsHtml = '';
+        if (recipe.servings && recipe.servings > 0) {
+            servingsHtml = `<strong>Portionen:</strong> <span class="display-servings">${recipe.servings}</span>`;
+        }
         
         let tagsHtml = '';
         if (recipe.tags && recipe.tags.length > 0) {
@@ -130,7 +179,7 @@ const openViewModal = async (recipeId) => {
         }
         
         viewRecipeContent.innerHTML = `
-            ${imageHtml} <h3>${recipe.title}</h3> ${ratingHtml} ${tagsHtml}
+            ${imageHtml} <h3>${recipe.title}</h3> ${ratingHtml} ${servingsHtml} ${tagsHtml}
             <strong>Zutaten:</strong> ${ingredientsHtml}
             <strong>Anleitung:</strong> ${instructionsHtml}
             ${notesHtml}
@@ -147,7 +196,7 @@ const closeViewModal = () => {
     viewRecipeContent.innerHTML = ''; 
 };
 
-// --- Filter-Modal Funktionen ---
+// --- Filter-Modal Funktionen (unverändert) ---
 const openFilterModal = () => {
     if (!filterModal) return;
     filterSearchInput.value = currentFilters.search;
@@ -168,74 +217,161 @@ const setFilterRating = (rating) => {
     });
 };
 
-// --- Funktion zum Anzeigen des Inhalts ---
+// --- Funktion zum Anzeigen des Inhalts (unverändert) ---
 const showContent = () => { 
     if (loader) loader.style.display = 'none'; 
     if (navbar) navbar.classList.remove('content-hidden'); 
     if (mainContent) mainContent.classList.remove('content-hidden'); 
 };
 
-// --- Zutaten-Funktionen ---
+// --- (Platzhalter - nicht mehr verwendet) ---
+const closeAllItemMenus = () => {
+    // Nicht mehr benötigt
+};
+
+// --- Zutaten-Funktionen (Überarbeitet auf Hover-Icons) ---
 const renderIngredientList = () => { 
     if (!ingredientList) return; 
     ingredientList.innerHTML = ''; 
     ingredientsArray.forEach((ingredient, index) => { 
         const li = document.createElement('li'); 
-        li.textContent = ingredient; 
-        const deleteBtn = document.createElement('button'); 
-        deleteBtn.textContent = '×'; 
-        deleteBtn.className = 'delete-item-btn'; 
-        deleteBtn.onclick = () => removeIngredient(index); 
-        li.appendChild(deleteBtn); 
+        li.innerHTML = ''; // Start clean
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'list-item-text';
+        textSpan.textContent = ingredient;
+        li.appendChild(textSpan);
+        
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'item-actions';
+        actionsDiv.innerHTML = `
+            <button type="button" class="item-action-btn menu-btn-edit-item" title="Bearbeiten" data-index="${index}" data-type="ingredient">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.5-.5H3v-.5a.5.5 0 0 1-.5-.5v-1.5c0-.276-.224-.5-.5-.5s-.5.224-.5.5v1.5c0 .013 0 .027.002.04L.5 13.5a.5.5 0 0 0 .5.5h2.793l6.5-6.5-2.793-2.793z"/>
+                </svg>
+            </button>
+            <button type="button" class="item-action-btn menu-btn-delete-item" title="Löschen" data-index="${index}" data-type="ingredient">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                </svg>
+            </button>
+        `;
+        
+        li.appendChild(actionsDiv);
         ingredientList.appendChild(li); 
     }); 
 };
+
 const addIngredient = () => { 
     if (!ingredientInput) return; 
     const ingredient = ingredientInput.value.trim(); 
-    if (ingredient) { 
+    if (!ingredient) return;
+
+    if (currentEditingIngredientIndex !== null) {
+        ingredientsArray[currentEditingIngredientIndex] = ingredient;
+        currentEditingIngredientIndex = null; 
+        addIngredientBtn.textContent = '+';
+        addIngredientBtn.classList.remove('edit-mode');
+    } else {
         ingredientsArray.push(ingredient); 
-        renderIngredientList(); 
-        ingredientInput.value = ''; 
-        ingredientInput.focus(); 
-    } 
+    }
+    
+    renderIngredientList(); 
+    ingredientInput.value = ''; 
+    ingredientInput.focus(); 
 };
+
 const removeIngredient = (index) => { 
     ingredientsArray.splice(index, 1); 
     renderIngredientList(); 
 };
 
-// --- Schritte-Funktionen ---
+const editIngredient = (index) => {
+    if (index === null || ingredientsArray[index] === undefined) return;
+    
+    closeRecipeModalCleanup(); // Alle anderen Edits beenden
+
+    currentEditingIngredientIndex = index;
+    ingredientInput.value = ingredientsArray[index];
+    addIngredientBtn.textContent = '✔';
+    addIngredientBtn.classList.add('edit-mode');
+    ingredientInput.focus();
+};
+
+
+// --- Schritte-Funktionen (Überarbeitet auf Hover-Icons) ---
 const renderStepsList = () => { 
     if (!stepList) return; 
     stepList.innerHTML = ''; 
     stepsArray.forEach((step, index) => { 
         const li = document.createElement('li'); 
-        li.textContent = step; 
-        const deleteBtn = document.createElement('button'); 
-        deleteBtn.textContent = '×'; 
-        deleteBtn.className = 'delete-item-btn'; 
-        deleteBtn.onclick = () => removeStep(index); 
-        li.appendChild(deleteBtn); 
+        li.innerHTML = ''; // Start clean
+
+        const textSpan = document.createElement('span');
+        textSpan.className = 'list-item-text';
+        textSpan.textContent = step;
+        li.appendChild(textSpan);
+        
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'item-actions';
+        actionsDiv.innerHTML = `
+            <button type="button" class="item-action-btn menu-btn-edit-item" title="Bearbeiten" data-index="${index}" data-type="step">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M12.854.146a.5.5 0 0 0-.707 0L10.5 1.793 14.207 5.5l1.647-1.646a.5.5 0 0 0 0-.708l-3-3zm.646 6.061L9.793 2.5 3.293 9H3.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.207l6.5-6.5zm-7.468 7.468A.5.5 0 0 1 6 13.5V13h-.5a.5.5 0 0 1-.5-.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.5-.5V10h-.5a.5.5 0 0 1-.5-.5H3v-.5a.5.5 0 0 1-.5-.5v-1.5c0-.276-.224-.5-.5-.5s-.5.224-.5.5v1.5c0 .013 0 .027.002.04L.5 13.5a.5.5 0 0 0 .5.5h2.793l6.5-6.5-2.793-2.793z"/>
+                </svg>
+            </button>
+            <button type="button" class="item-action-btn menu-btn-delete-item" title="Löschen" data-index="${index}" data-type="step">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+                    <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+                </svg>
+            </button>
+        `;
+        
+        li.appendChild(actionsDiv);
         stepList.appendChild(li); 
     }); 
 };
+
 const addStep = () => { 
     if (!stepInput) return; 
     const step = stepInput.value.trim(); 
-    if (step) { 
+    if (!step) return; 
+    
+    if (currentEditingStepIndex !== null) {
+        stepsArray[currentEditingStepIndex] = step;
+        currentEditingStepIndex = null; 
+        addStepBtn.textContent = '+';
+        addStepBtn.classList.remove('edit-mode');
+    } else {
         stepsArray.push(step); 
-        renderStepsList(); 
-        stepInput.value = ''; 
-        stepInput.focus(); 
-    } 
+    }
+    
+    renderStepsList(); 
+    stepInput.value = ''; 
+    stepInput.focus(); 
 };
+
 const removeStep = (index) => { 
     stepsArray.splice(index, 1); 
     renderStepsList(); 
 };
 
-// --- Bewertungs-Funktionen (im Erstellen/Bearbeiten-Modal) ---
+const editStep = (index) => {
+    if (index === null || stepsArray[index] === undefined) return;
+
+    closeRecipeModalCleanup(); // Alle anderen Edits beenden
+
+    currentEditingStepIndex = index;
+    stepInput.value = stepsArray[index];
+    addStepBtn.textContent = '✔';
+    addStepBtn.classList.add('edit-mode');
+    stepInput.focus();
+};
+
+
+// --- Bewertungs-Funktionen (unverändert) ---
 const setRating = (rating) => {
     currentRating = Number(rating);
     if (ratingStars) {
@@ -245,9 +381,42 @@ const setRating = (rating) => {
     }
 };
 
-// --- Initialisierung ---
+// --- Portionen-Funktionen (NEUE LOGIK) ---
+const setServings = (value) => {
+    // value kann eine Zahl (von Buttons) oder null (von Input) sein
+    if (value !== null) {
+        // Ein Button wurde geklickt
+        currentServings = Number(value);
+        if (customServingInput) customServingInput.value = '';
+        
+        // Visuelles Update für Buttons
+        if (servingButtons) {
+            servingButtons.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.value == currentServings);
+            });
+        }
+    } else {
+        // Das Input-Feld wird benutzt
+        const customValue = parseInt(customServingInput.value, 10);
+        if (!isNaN(customValue) && customValue > 0) {
+            currentServings = customValue;
+        } else {
+            currentServings = 0; // Ungültig, wenn leer
+        }
+        
+        // Visuelles Update: ALLE Buttons deaktivieren
+        if (servingButtons) {
+            servingButtons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+    }
+};
+
+
+// --- Initialisierung (ERWEITERT) ---
 const init = () => {
-    console.log("recipes.js Init Start (NEUE VERSION)");
+    console.log("recipes.js Init Start (Version mit Portions-Fix & Tag-Redesign)");
 
     // --- DOM-Elemente holen ---
     loader = document.getElementById('loader');
@@ -270,6 +439,9 @@ const init = () => {
     stepList = document.getElementById('step-list');
     ratingGroup = document.getElementById('modal-recipe-rating');
     ratingStars = ratingGroup ? ratingGroup.querySelectorAll('.rating-star') : [];
+    servingsGroup = document.getElementById('modal-servings-select');
+    customServingInput = document.getElementById('modal-serving-custom');
+    servingButtons = servingsGroup ? servingsGroup.querySelectorAll('.serving-btn') : [];
     modalRecipeNotes = document.getElementById('modal-recipe-notes');
     tagSelectionGroup = document.getElementById('modal-tag-selection');
     viewModal = document.getElementById('view-recipe-modal');
@@ -288,14 +460,12 @@ const init = () => {
     applyFilterBtn = document.getElementById('btn-apply-filters');
     activeFiltersDisplay = document.getElementById('active-filters-display');
     // --- ENDE DOM-Elemente holen ---
-
-    // Sicherheitscheck
-    if (!cookbookTitleDisplay || !recipeGallery || !galleryMessage || !recipeModal || !viewModal || !tagSelectionGroup || !ratingGroup || !filterModal || !openFilterBtn || !activeFiltersDisplay) {
+    
+    // (Sicherheitscheck, URL-Params, Auth Wächter - unverändert)
+    if (!cookbookTitleDisplay || !recipeGallery || !galleryMessage || !recipeModal || !viewModal || !tagSelectionGroup || !ratingGroup || !filterModal || !openFilterBtn || !activeFiltersDisplay || !servingsGroup || !customServingInput || !ingredientList || !stepList) {
         console.error("FEHLER: Wichtige HTML-Elemente auf der Rezeptseite fehlen!");
         return;
     }
-    
-    // URL-Parameter holen
     try { 
         const urlParams = new URLSearchParams(window.location.search); 
         const cookbookId = urlParams.get('id'); 
@@ -303,14 +473,12 @@ const init = () => {
         currentCookbookId = cookbookId; 
     }
     catch (error) { console.error("Fehler URL:", error); alert("Fehler Kochbuch-ID."); window.location.href = 'dashboard.html'; return; }
-
-    // Auth Wächter
     auth.onAuthStateChanged((user) => { 
         if (user) { 
             currentUser = user; 
             if (currentCookbookId) { 
-                loadCookbookDetails(user.uid, currentCookbookId); // Lädt Titel
-                loadRecipes(user.uid, currentCookbookId); // Lädt Rezepte
+                loadCookbookDetails(user.uid, currentCookbookId); 
+                loadRecipes(user.uid, currentCookbookId); 
             } 
             showContent(); 
         } else { 
@@ -319,7 +487,7 @@ const init = () => {
         } 
     });
 
-    // --- Event Listeners ---
+    // --- Event Listeners (Angepasst) ---
     if (recipeGallery) recipeGallery.addEventListener('click', (e) => { if (e.target.closest('#btn-open-create-modal')) { openCreateModal(); return; } const clickedRecipe = e.target.closest('.recipe-data-item'); if (clickedRecipe) { openViewModal(clickedRecipe.dataset.id); } });
     if (saveRecipeBtn) saveRecipeBtn.addEventListener('click', saveRecipe);
     if (recipeModalCloseBtn) recipeModalCloseBtn.addEventListener('click', closeRecipeModal);
@@ -332,6 +500,7 @@ const init = () => {
     if (ingredientInput) ingredientInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addIngredient(); } });
     if (addStepBtn) addStepBtn.addEventListener('click', addStep);
     if (stepInput) stepInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); addStep(); } });
+    
     if (ratingStars) {
         ratingStars.forEach(star => {
             star.addEventListener('click', () => { setRating(star.dataset.value); });
@@ -341,12 +510,30 @@ const init = () => {
         });
         ratingGroup.addEventListener('mouseleave', () => { setRating(currentRating); });
     }
+    
+    // NEUE PORTIONS-LISTENER
+    if (servingsGroup) {
+        servingsGroup.addEventListener('click', (e) => {
+            const btn = e.target.closest('.serving-btn');
+            if (btn) {
+                setServings(btn.dataset.value); // Ruft mit "1", "2" oder "4" auf
+            }
+        });
+    }
+    if (customServingInput) {
+        // Ruft setServings(null) auf, um die Buttons zu deaktivieren
+        customServingInput.addEventListener('input', () => setServings(null)); 
+        customServingInput.addEventListener('focus', () => setServings(null));
+    }
+    // ENDE NEUE PORTIONS-LISTENER
+    
     if (tagSelectionGroup) {
         tagSelectionGroup.addEventListener('click', (e) => {
             const btn = e.target.closest('.tag-btn');
             if (btn) { e.preventDefault(); btn.classList.toggle('active'); }
         });
     }
+    
     if (openFilterBtn) openFilterBtn.addEventListener('click', openFilterModal);
     if (filterModalCloseBtn) filterModalCloseBtn.addEventListener('click', closeFilterModal);
     if (filterModal) filterModal.addEventListener('click', (e) => { if (e.target === filterModal) closeFilterModal(); });
@@ -389,15 +576,50 @@ const init = () => {
             }
         });
     }
+
+    // NEU: Event-Delegation für Zutaten-Liste
+    if (ingredientList) {
+        ingredientList.addEventListener('click', (e) => {
+            const btn = e.target.closest('button.item-action-btn'); // Nur auf Action-Buttons reagieren
+            if (!btn) return;
+
+            e.preventDefault();
+            const index = Number(btn.dataset.index);
+            
+            if (btn.classList.contains('menu-btn-delete-item')) {
+                removeIngredient(index);
+            }
+            if (btn.classList.contains('menu-btn-edit-item')) {
+                editIngredient(index);
+            }
+        });
+    }
+    
+    // NEU: Event-Delegation für Schritte-Liste
+    if (stepList) {
+        stepList.addEventListener('click', (e) => {
+            const btn = e.target.closest('button.item-action-btn'); // Nur auf Action-Buttons reagieren
+            if (!btn) return;
+
+            e.preventDefault();
+            const index = Number(btn.dataset.index);
+            
+            if (btn.classList.contains('menu-btn-delete-item')) {
+                removeStep(index);
+            }
+            if (btn.classList.contains('menu-btn-edit-item')) {
+                editStep(index);
+            }
+        });
+    }
 };
 
-// --- Funktion: Lade Kochbuch-Details (GEÄNDERT) ---
+// --- (Restliche Funktionen sind unverändert) ---
+
 const loadCookbookDetails = async (userId, cookbookId) => {
     if (!cookbookTitleDisplay) return;
     try { 
-        // *** NEUER PFAD ***
         const doc = await db.collection('cookbooks').doc(cookbookId).get(); 
-        
         if (doc.exists) { 
             cookbookTitleDisplay.textContent = `Rezepte in: ${doc.data().title}`; 
         } else { 
@@ -409,7 +631,6 @@ const loadCookbookDetails = async (userId, cookbookId) => {
     }
 };
 
-// --- Funktion: "Plus"-Kachel erstellen (unverändert) ---
 const createAddRecipeTile = () => {
     if (!recipeGallery) return;
     const item = document.createElement('div'); 
@@ -419,7 +640,6 @@ const createAddRecipeTile = () => {
     recipeGallery.appendChild(item);
 };
 
-// --- Funktion: Lade Rezepte (GEÄNDERT) ---
 const loadRecipes = async (userId, cookbookId) => {
     if (!galleryMessage || !recipeGallery) { console.error("FEHLER: Galerie-Elemente fehlen!"); return; }
     galleryMessage.textContent = 'Lade Rezepte...';
@@ -427,7 +647,6 @@ const loadRecipes = async (userId, cookbookId) => {
     currentFilters = { search: '', rating: 0, tags: [] };
     
     try {
-        // *** NEUER PFAD ***
         const snapshot = await db.collection('cookbooks').doc(cookbookId)
                                  .collection('recipes').orderBy('createdAt', 'desc').get();
         
@@ -441,7 +660,7 @@ const loadRecipes = async (userId, cookbookId) => {
             allCookbookRecipes.push({ id: doc.id, ...doc.data() });
         });
         
-        renderFilteredRecipes(); // <--- Diese Funktion rendert jetzt alles
+        renderFilteredRecipes(); 
         displayActiveFilters();
     } catch (error) {
         console.error('Fehler beim Laden der Rezepte:', error);
@@ -449,9 +668,7 @@ const loadRecipes = async (userId, cookbookId) => {
     }
 };
 
-// --- (Filter-Funktionen - JETZT VOLLSTÄNDIG) ---
 const applyFilters = () => {
-    console.log("Filter werden angewendet...");
     currentFilters.search = filterSearchInput.value.toLowerCase().trim();
     const activeStar = filterRatingGroup.querySelector('.rating-star.active:last-child');
     currentFilters.rating = activeStar ? Number(activeStar.dataset.value) : 0;
@@ -459,7 +676,6 @@ const applyFilters = () => {
     filterTagGroup.querySelectorAll('.tag-btn.active').forEach(btn => {
         currentFilters.tags.push(btn.dataset.tag);
     });
-    console.log("Aktive Filter:", currentFilters);
     renderFilteredRecipes();
     displayActiveFilters();
     closeFilterModal();
@@ -508,7 +724,6 @@ const renderFilteredRecipes = () => {
     recipeGallery.innerHTML = '';
     let filteredRecipes = [...allCookbookRecipes];
 
-    // Filter anwenden
     if (currentFilters.search) {
         filteredRecipes = filteredRecipes.filter(recipe => recipe.title.toLowerCase().includes(currentFilters.search));
     }
@@ -522,13 +737,8 @@ const renderFilteredRecipes = () => {
         });
     }
 
-    console.log(filteredRecipes.length, "Rezepte nach Filterung.");
-    
-    // *** HIER IST DIE KORREKTUR ***
-    // "Plus"-Kachel immer zuerst hinzufügen
     createAddRecipeTile(); 
 
-    // Nachricht anzeigen, wenn nötig
     if (filteredRecipes.length === 0) {
         if(allCookbookRecipes.length > 0) {
              galleryMessage.textContent = "Keine Rezepte entsprechen deinen Filtern.";
@@ -539,7 +749,6 @@ const renderFilteredRecipes = () => {
         galleryMessage.textContent = '';
     }
 
-    // Gefilterte Rezepte rendern
     filteredRecipes.forEach(recipe => {
         const item = document.createElement('div');
         item.className = 'recipe-item recipe-data-item';
@@ -559,7 +768,6 @@ const renderFilteredRecipes = () => {
     });
 };
 
-// --- Funktion: Speichere Rezept (GEÄNDERT) ---
 const saveRecipe = async () => {
     const title = modalRecipeName.value.trim();
     const imageUrl = modalRecipeImage.value.trim();
@@ -567,6 +775,16 @@ const saveRecipe = async () => {
     const instructions = stepsArray;
     const notes = modalRecipeNotes.value.trim();
     const rating = currentRating;
+    
+    // NEU: Stellt sicher, dass der Wert aus dem Input-Feld gelesen wird, falls keine Buttons aktiv sind
+    let servings = currentServings;
+    if (customServingInput.value) {
+        const customVal = parseInt(customServingInput.value, 10);
+        if (!isNaN(customVal) && customVal > 0) {
+            servings = customVal;
+        }
+    }
+
     const selectedTags = [];
     if (tagSelectionGroup) {
         tagSelectionGroup.querySelectorAll('.tag-btn.active').forEach(btn => {
@@ -576,47 +794,53 @@ const saveRecipe = async () => {
     const tags = selectedTags;
     
     if (!title) { alert('Bitte gib einen Rezeptnamen ein.'); return; }
+    // NEU: Stellt sicher, dass 'servings' ein gültiger Wert ist
+    if (!servings || servings <= 0) { 
+        alert('Bitte gib eine gültige Portionsgröße ein.'); 
+        customServingInput.focus();
+        return; 
+    } 
 
     const recipeData = {
-        title: title, imageUrl: imageUrl, ingredients: ingredients, instructions: instructions,
-        notes: notes, tags: tags, rating: Number(rating)
+        title: title, 
+        imageUrl: imageUrl, 
+        ingredients: ingredients, 
+        instructions: instructions,
+        notes: notes, 
+        tags: tags, 
+        rating: Number(rating),
+        servings: Number(servings) // Speichert die korrigierte Zahl
     };
     
     try {
         if (currentEditingRecipeId) {
-            // ---- MODUS: BEARBEITEN ----
-            // *** NEUER PFAD ***
             const docRef = db.collection('cookbooks').doc(currentCookbookId)
                              .collection('recipes').doc(currentEditingRecipeId);
             await docRef.update(recipeData);
         } else {
-            // ---- MODUS: NEU ERSTELLEN ----
-            // *** NEUER PFAD ***
             recipeData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
             await db.collection('cookbooks').doc(currentCookbookId)
                       .collection('recipes').add(recipeData);
         }
         closeRecipeModal();
-        loadRecipes(currentUser.uid, currentCookbookId); // Lade neu
+        loadRecipes(currentUser.uid, currentCookbookId); 
     } catch (error) { 
         console.error('Fehler beim Speichern:', error); 
     }
 };
 
-// --- Funktion: Lösche Rezept (GEÄNDERT) ---
 const deleteRecipe = async () => {
     if (!currentRecipeId) { alert("Fehler: Kein Rezept ausgewählt."); return; }
     if (!confirm('Bist du sicher, dass du dieses Rezept löschen möchtest?')) return;
     if (!currentUser || !currentCookbookId) return;
     
     try {
-        // *** NEUER PFAD ***
         await db.collection('cookbooks').doc(currentCookbookId)
                   .collection('recipes').doc(currentRecipeId).delete();
         
         console.log('Rezept gelöscht!');
         closeViewModal();
-        loadRecipes(currentUser.uid, currentCookbookId); // Lade neu
+        loadRecipes(currentUser.uid, currentCookbookId); 
     } catch (error) { 
         console.error('Fehler beim Löschen:', error); 
     }

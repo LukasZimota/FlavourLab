@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rezepte - Meine Rezepte</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="recipes.css"> 
 </head>
 <body>
 
@@ -13,10 +14,10 @@
         <p>Wir laden deine Rezepte</p>
     </div>
 
+    <!-- Navbar (unverändert) -->
     <header class="navbar content-hidden">
         <div class="navbar-container">
             <span class="navbar-brand">Flavour Lab</span>
-            
             <button id="nav-toggle-btn" class="nav-toggle-btn" aria-label="Menü öffnen" aria-expanded="false">
                 <span></span>
                 <span></span>
@@ -25,7 +26,6 @@
             </button>
         </div>
     </header>
-
     <nav id="nav-menu" class="navbar-tabs">
         <ul>
             <li><a href="dashboard.html" class="active">📚 Kochbücher</a></li>
@@ -39,6 +39,8 @@
             </li>
         </ul>
     </nav>
+    <!-- Ende Navbar -->
+    
     <main class="main-content content-hidden">
         <div class="recipe-container">
             <a href="dashboard.html" class="back-link">Zurück zu den Kochbüchern</a>
@@ -61,57 +63,134 @@
         </div>
     </main>
 
+    <!-- 
+      *************************************************
+      * START: "Rezept erstellen"-Modal (Finale Version) *
+      *************************************************
+    -->
     <div id="create-recipe-modal" class="modal-overlay modal-hidden">
         <div class="modal-content">
             <span id="create-modal-close-btn" class="modal-close">&times;</span>
             <h3 id="recipe-modal-title">Neues Rezept hinzufügen</h3>
+            
             <div class="modal-scrollable-content">
                 <div id="new-recipe-form" class="modal-form">
+                    
+                    <!-- 1. Rezeptname -->
                     <label for="modal-recipe-name">Rezeptname</label>
                     <input type="text" id="modal-recipe-name" placeholder="z.B. Grüner Smoothie">
-                    <label for="modal-recipe-image">Bild-URL (Optional)</label>
-                    <input type="text" id="modal-recipe-image" placeholder="https://beispiel.com/smoothie.jpg">
-                    <label>Bewertung</label>
-                    <div class="rating-group" id="modal-recipe-rating">
-                        <span class="rating-star" data-value="1"></span>
-                        <span class="rating-star" data-value="2"></span>
-                        <span class="rating-star" data-value="3"></span>
-                        <span class="rating-star" data-value="4"></span>
-                        <span class="rating-star" data-value="5"></span>
+                    
+                    <!-- 2. Bild-URL mit Dropdown-Platzhalter -->
+                    <label for="modal-recipe-image">Bild</label>
+                    <div class="image-input-wrapper">
+                        <span class="image-input-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757a4.5 4.5 0 0 1 6.364 0l-1.757 1.757a2.5 2.5 0 0 0-3.536-3.536l-1.757-1.757a4.5 4.5 0 0 1 6.364 6.364l-4.5 4.5a2.5 2.5 0 0 0-3.536-3.536l1.757-1.757a.5.5 0 0 1 .708 0z"/>
+                            </svg>
+                        </span>
+                        <input type="text" id="modal-recipe-image" placeholder="https://beispiel.com/smoothie.jpg">
+                        <div class="image-source-dropdown">
+                            <button type="button" class="image-source-btn">
+                                Link
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
-                    <label for="modal-ingredient-input">Zutaten hinzufügen</label>
+
+                    <!-- 3. Portionen -->
+                    <div class="form-group">
+                        <label for="modal-servings-select">Portionen</label>
+                        <div class="servings-group" id="modal-servings-select">
+                            <button type="button" class="serving-btn" data-value="1">
+                                1
+                                <!-- NEU: SVG fill="currentColor" für CSS-Steuerung -->
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="serving-btn" data-value="2">
+                                2
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                </svg>
+                            </button>
+                            <button type="button" class="serving-btn active" data-value="4">
+                                4
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
+                                </svg>
+                            </button>
+                            <div class="serving-custom-wrapper">
+                                <input type="number" id="modal-serving-custom" placeholder="Eigene" min="1" class="serving-custom-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Bewertung -->
+                    <div class="form-group">
+                        <label>Bewertung</label>
+                        <div class="rating-group" id="modal-recipe-rating">
+                            <span class="rating-star" data-value="1"></span>
+                            <span class="rating-star" data-value="2"></span>
+                            <span class="rating-star" data-value="3"></span>
+                            <span class="rating-star" data-value="4"></span>
+                            <span class="rating-star" data-value="5"></span>
+                        </div>
+                    </div>
+
+                    <!-- 5. Tags -->
+                    <label>Tags (Optional)</label>
+                    <div class="tag-selection-group" id="modal-tag-selection">
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Vegan">Vegan</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Vegetarisch">Vegetarisch</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Glutenfrei">Glutenfrei</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Laktosefrei">Laktosefrei</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Schnell">Schnell</button>
+                    </div>
+
+                    <!-- 6. Zutaten -->
+                    <label for="modal-ingredient-input">Zutaten</label>
                     <div class="ingredient-input-group">
                         <input type="text" id="modal-ingredient-input" placeholder="z.B. 1 Banane">
                         <button type="button" id="btn-add-ingredient">+</button>
                     </div>
-                    <ul id="ingredient-list"></ul>
-                    <label for="modal-step-input">Zubereitungsschritte hinzufügen</label>
+                    <ul id="ingredient-list">
+                        <!-- Inhalt wird von JS generiert -->
+                    </ul>
+                    
+                    <!-- 7. Zubereitungsschritte -->
+                    <label for="modal-step-input">Zubereitung</label>
                     <div class="step-input-group">
                         <input type="text" id="modal-step-input" placeholder="z.B. Banane schälen">
                         <button type="button" id="btn-add-step">+</button>
                     </div>
-                    <ol id="step-list"></ol>
+                    <ol id="step-list">
+                        <!-- Inhalt wird von JS generiert -->
+                    </ol>
+                    
+                    <!-- 8. Notizen -->
                     <label for="modal-recipe-notes">Notizen & Tipps (Optional)</label>
                     <textarea id="modal-recipe-notes" placeholder="z.B. Schmeckt am besten mit..."></textarea>
-                    <label>Tags (Optional)</label>
-                    <div class="tag-selection-group" id="modal-tag-selection">
-                        <button type="button" class="tag-btn" data-tag="Vegan">Vegan</button>
-                        <button type="button" class="tag-btn" data-tag="Vegetarisch">Vegetarisch</button>
-                        <button type="button" class="tag-btn" data-tag="Glutenfrei">Glutenfrei</button>
-                        <button type="button" class="tag-btn" data-tag="Laktosefrei">Laktosefrei</button>
-                        <button type="button" class="tag-btn" data-tag="Schnell">Schnell</button>
-                    </div>
+                
                 </div>
             </div>
-            <button id="btn-save-recipe" class="modal-save-button">Rezept speichern</button>
+            
+            <!-- 9. Speicher-Button -->
+            <button id="btn-save-recipe" class="modal-save-button">Rezept hochladen</button>
         </div>
     </div>
+    <!-- ENDE: "Rezept erstellen"-Modal -->
 
+
+    <!-- "Rezept anzeigen"-Modal (unverändert) -->
     <div id="view-recipe-modal" class="modal-overlay modal-hidden">
         <div class="modal-content">
             <span id="view-modal-close-btn" class="modal-close">&times;</span>
             <div class="modal-scrollable-content">
-                <div id="view-recipe-content"> </div>
+                <div id="view-recipe-content">
+                </div>
             </div>
             <div class="recipe-modal-actions">
                 <button id="btn-edit-recipe" class="btn-edit">Bearbeiten</button>
@@ -120,6 +199,7 @@
         </div>
     </div>
     
+    <!-- Filter-Modal (unverändert) -->
     <div id="filter-modal" class="modal-overlay modal-hidden">
         <div class="modal-content">
             <span id="filter-modal-close-btn" class="modal-close">&times;</span>
@@ -139,11 +219,11 @@
                     <button type="button" id="clear-rating-filter" class="clear-filter-btn">Bewertung zurücksetzen</button>
                     <label>Tags (Mehrfachauswahl)</label>
                     <div class="tag-selection-group" id="filter-tag-group">
-                        <button type="button" class="tag-btn" data-tag="Vegan">Vegan</button>
-                        <button type="button" class="tag-btn" data-tag="Vegetarisch">Vegetarisch</button>
-                        <button type="button" class="tag-btn" data-tag="Glutenfrei">Glutenfrei</button>
-                        <button type="button" class="tag-btn" data-tag="Laktosefrei">Laktosefrei</button>
-                        <button type="button" class="tag-btn" data-tag="Schnell">Schnell</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Vegan">Vegan</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Vegetarisch">Vegetarisch</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Glutenfrei">Glutenfrei</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Laktosefrei">Laktosefrei</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Schnell">Schnell</button>
                     </div>
                 </div>
             </div>
@@ -151,21 +231,19 @@
         </div>
     </div>
     
+    <!-- Skripte (unverändert) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
     <script type="module" src="./firebase-config.js"></script>
+    
+    <!-- WICHTIG: Diese JS-Datei ist NEU/GEÄNDERT -->
     <script type="module" src="./recipes.js"></script>
-
+    
+    <!-- Navigations-Skript (unverändert) -->
     <script type="module">
-      // Importiere auth und db, da wir sie hier brauchen
       import { auth, db } from './firebase-config.js';
-
-      // Globale Variable für den Listener, damit wir ihn trennen können
       let invitationListener = null;
-
-      // Funktion zum Umschalten des Menüs
       const setupNavToggle = () => {
         const navToggleBtn = document.getElementById('nav-toggle-btn');
         if (navToggleBtn) {
@@ -176,15 +254,10 @@
           });
         }
       };
-
-      // Funktion zum Anzeigen/Verstecken der Punkte
       const updateNotificationDots = (hasInvites) => {
         const toggleDot = document.getElementById('nav-toggle-notification');
         const menuDot = document.getElementById('nav-account-notification');
-        
-        // Dieser Punkt existiert NUR auf account.html, aber wir suchen trotzdem danach
         const accountPageDot = document.getElementById('account-invites-notification');
-
         if (hasInvites) {
           if (toggleDot) toggleDot.classList.remove('notification-dot-hidden');
           if (menuDot) menuDot.classList.remove('notification-dot-hidden');
@@ -195,36 +268,25 @@
           if (accountPageDot) accountPageDot.classList.add('notification-dot-hidden');
         }
       };
-
-      // Funktion, die auf neue Einladungen hört
       const listenForInvites = (userId) => {
-        // Trenne alten Listener, falls vorhanden
         if (invitationListener) {
           invitationListener();
         }
-
-        // Erstelle die Echtzeit-Query
         const invitesQuery = db.collection("invitations")
             .where("toUserId", "==", userId)
             .where("status", "==", "pending");
-
-        // Starte den Echtzeit-Listener
         invitationListener = invitesQuery.onSnapshot((snapshot) => {
             console.log(`Notification-Check: ${snapshot.size} Einladungen gefunden.`);
-            updateNotificationDots(!snapshot.empty); // Zeige/verstecke Punkte
+            updateNotificationDots(!snapshot.empty);
         }, (error) => {
             console.error("Fehler im Benachrichtigungs-Listener:", error);
-            updateNotificationDots(false); // Bei Fehler sicherheitshalber verstecken
+            updateNotificationDots(false);
         });
       };
-
-      // Auth-Wächter, der alles startet
       auth.onAuthStateChanged((user) => {
         if (user) {
-          // Nutzer ist eingeloggt, starte den Listener
           listenForInvites(user.uid);
         } else {
-          // Nutzer ist ausgeloggt, trenne Listener und verstecke Punkte
           if (invitationListener) {
             invitationListener();
             invitationListener = null;
@@ -232,8 +294,6 @@
           updateNotificationDots(false);
         }
       });
-
-      // Starte den Menü-Toggle-Listener, sobald das DOM geladen ist
       document.addEventListener('DOMContentLoaded', setupNavToggle);
     </script>
 
