@@ -72,9 +72,15 @@ const loadCookbooks = async (userId) => {
             const shareButtonHtml = isOwner ? 
                 '<a href="#" class="menu-btn-share">Teilen</a>' : '';
 
-            // NEU: "Löschen"-Button nur für Besitzer
-            const deleteButtonHtml = isOwner ? 
-                '<a href="#" class="menu-btn-delete">Löschen</a>' : '';
+            // --- START ÄNDERUNG: "Löschen" (Owner) oder "Verlassen" (Editor) Button ---
+            let actionButtonHtml = '';
+            if (isOwner) {
+                actionButtonHtml = '<a href="#" class="menu-btn-delete">Kochbuch löschen</a>';
+            } else {
+                // Nutzer ist Editor, also "Verlassen"-Button anzeigen
+                actionButtonHtml = '<a href="#" class="menu-btn-leave">Kochbuch verlassen</a>';
+            }
+            // --- ENDE ÄNDERUNG ---
 
             item.innerHTML = `
                 <div class="cookbook-item-background" style="${style}"></div>
@@ -87,7 +93,7 @@ const loadCookbooks = async (userId) => {
                 <div class="cookbook-menu ${menuOpenId === cookbookId ? 'menu-open' : ''}">
                     <a href="#" class="menu-btn-edit">Bearbeiten</a>
                     ${shareButtonHtml} 
-                    ${deleteButtonHtml}
+                    ${actionButtonHtml} 
                 </div>
             `;
             cookbookGallery.appendChild(item);
@@ -201,7 +207,7 @@ const saveCookbook = async () => {
 
 // --- Funktion zum Löschen (GEÄNDERT) ---
 const deleteCookbook = async (cookbookId) => {
-    if (!confirm('Bist du sicher, dass du dieses Kochbuch löschen möchtest? Alle darin enthaltenen Rezepte werden ebenfalls gelöscht.')) {
+    if (!confirm('Bist du sicher, dass du dieses Kochbuch löschen möchtest? Alle darin enthaltenen Rezepte werden ebenfalls gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.')) {
         return;
     }
     
@@ -222,6 +228,34 @@ const deleteCookbook = async (cookbookId) => {
         alert("Löschen fehlgeschlagen.");
     }
 };
+
+// --- START: NEUE FUNKTION ZUM VERLASSEN ---
+const leaveCookbook = async (cookbookId) => {
+    if (!currentUser || !cookbookId) return;
+    
+    // Bestätigung einholen
+    if (!confirm('Möchtest du dieses geteilte Kochbuch wirklich aus deiner Bibliothek entfernen? Es wird nicht für den Besitzer oder andere Mitglieder gelöscht.')) {
+        return;
+    }
+
+    try {
+        const cookbookRef = db.collection('cookbooks').doc(cookbookId);
+        
+        // Entferne den Nutzer aus der "members"-Map, indem das Feld gelöscht wird
+        await cookbookRef.update({
+            [`members.${currentUser.uid}`]: firebase.firestore.FieldValue.delete()
+        });
+        
+        console.log('Kochbuch erfolgreich verlassen.');
+        loadCookbooks(currentUser.uid); // Lade die Galerie neu
+        
+    } catch (error) {
+        console.error("Fehler beim Verlassen des Kochbuchs:", error);
+        alert("Verlassen fehlgeschlagen.");
+    }
+};
+// --- ENDE: NEUE FUNKTION ZUM VERLASSEN ---
+
 
 // --- NEUE FUNKTIONEN FÜR DAS "TEILEN"-MODAL ---
 const openShareModal = (cookbookId, title) => {
@@ -312,6 +346,15 @@ const handleGalleryClick = (e) => {
         deleteCookbook(cookbookId);
         return;
     }
+    
+    // --- START ÄNDERUNG: Klick auf "Verlassen" ---
+    const leaveBtn = e.target.closest('.menu-btn-leave');
+    if (leaveBtn) {
+        e.preventDefault();
+        leaveCookbook(cookbookId); // Rufe die neue Funktion auf
+        return;
+    }
+    // --- ENDE ÄNDERUNG ---
     
     // Klick auf "Bearbeiten" im Menü
     const editBtn = e.target.closest('.menu-btn-edit');

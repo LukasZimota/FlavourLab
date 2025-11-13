@@ -168,6 +168,16 @@
     background-color: #ffeaea;
 }
 
+/* --- START ÄNDERUNG: Stil für "Verlassen"-Button --- */
+.cookbook-menu .menu-btn-leave {
+    color: #ff9500; /* Orange als Warnfarbe */
+}
+.cookbook-menu .menu-btn-leave:hover {
+    background-color: #fff8eb; /* Sehr helles Orange */
+}
+/* --- ENDE ÄNDERUNG --- */
+
+
 /* --- "Plus"-Kachel-Styling (unverändert) --- */
 .add-cookbook-tile {
     background-color: #f9f9f9;
