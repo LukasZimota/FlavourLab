@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Konto - Meine Rezepte</title>
     <link rel="stylesheet" href="style.css">
-    </head>
+    <link rel="stylesheet" href="account.css"> <!-- account.css wird schon geladen -->
+</head>
 <body>
 
     <div id="loader" class="loader-container">
@@ -13,10 +14,10 @@
         <p>Wir laden deine Daten</p>
     </div>
 
+    <!-- Navbar (unverändert) -->
     <header class="navbar content-hidden">
         <div class="navbar-container">
             <span class="navbar-brand">Flavour Lab</span>
-            
             <button id="nav-toggle-btn" class="nav-toggle-btn" aria-label="Menü öffnen" aria-expanded="false">
                 <span></span>
                 <span></span>
@@ -25,7 +26,6 @@
             </button>
         </div>
     </header>
-
     <nav id="nav-menu" class="navbar-tabs">
         <ul>
             <li><a href="dashboard.html">📚 Kochbücher</a></li>
@@ -39,10 +39,13 @@
             </li>
         </ul>
     </nav>
+    <!-- Ende Navbar -->
+
     <main class="main-content content-hidden">
         <div class="account-container">
             <h2 id="account-title">Hi!</h2>
             
+            <!-- Hauptmenü (unverändert) -->
             <div class="account-menu" id="account-menu">
                 <div class="account-menu-item" id="btn-show-data">
                     <span>Kontodaten</span>
@@ -66,6 +69,15 @@
                     </svg>
                 </div>
 
+                <!-- NEU: "Über uns"-Menüpunkt -->
+                <div class="account-menu-item" id="btn-show-legal">
+                    <span>Über uns</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="account-arrow" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708"/>
+                    </svg>
+                </div>
+                
+                <!-- Spenden-Link (unverändert) -->
                 <a href="https://www.buymeacoffee.com/DEIN-PROFIL" target="_blank" rel="noopener noreferrer" class="account-menu-item account-menu-link">
                     <span>Spendiere mir einen Kaffee</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="account-arrow" viewBox="0 0 16 16">
@@ -74,6 +86,8 @@
                     </svg>
                 </a>
             </div>
+
+            <!-- Ansicht 1: Daten (unverändert) -->
             <div class="account-data-display hidden" id="account-data-display">
                 <h4>Deine Daten</h4>
                 <p><strong>Vorname:</strong> <span id="display-firstname">...</span></p>
@@ -81,6 +95,7 @@
                 <button id="btn-hide-data" class="account-data-close-btn">Zurück</button>
             </div>
 
+            <!-- Ansicht 2: Stats (unverändert) -->
             <div class="account-stats-display hidden" id="account-stats-display">
                 <h4>Deine Statistik</h4>
                 <div class="stat-item">
@@ -98,6 +113,7 @@
                 <button id="btn-hide-stats" class="account-data-close-btn">Zurück</button>
             </div>
             
+            <!-- Ansicht 3: Einladungen (unverändert) -->
             <div class="account-invites-display hidden" id="account-invites-display">
                 <h4>Deine Einladungen</h4>
                 <p id="invites-message" class="message">Lade Einladungen...</p>
@@ -105,25 +121,87 @@
                     </div>
                 <button id="btn-hide-invites" class="account-data-close-btn">Zurück</button>
             </div>
+
+            <!-- NEU: Ansicht 4: "Über uns" / Impressum / Datenschutz -->
+            <div class="account-legal-display hidden" id="account-legal-display">
+                <h4>Über uns</h4>
+                
+                <!-- Sub-Navigation (Tabs) -->
+                <div class="legal-tab-group">
+                    <button id="btn-show-imprint" class="legal-tab-btn active">Impressum</button>
+                    <button id="btn-show-privacy" class="legal-tab-btn">Datenschutz</button>
+                </div>
+
+                <!-- Inhalt Impressum -->
+                <div id="imprint-content" class="legal-content">
+                    <h5>Impressum</h5>
+                    <p>Angaben gemäß § 5 TMG</p>
+                    <p>
+                        Max Mustermann<br>
+                        Musterstraße 111<br>
+                        12345 Musterstadt
+                    </p>
+                    <p>
+                        <strong>Vertreten durch:</strong><br>
+                        Max Mustermann
+                    </p>
+                    <p>
+                        <strong>Kontakt:</strong><br>
+                        Telefon: 01234-789456<br>
+                        E-Mail: <a href="mailto:max@mustermann.de">max@mustermann.de</a>
+                    </p>
+                    <p>
+                        <strong>Haftungsausschluss:</strong><br>
+                        Trotz sorgfältiger inhaltlicher Kontrolle übernehmen wir keine Haftung für die Inhalte externer Links. Für den Inhalt der verlinkten Seiten sind ausschließlich deren Betreiber verantwortlich.
+                    </p>
+                </div>
+
+                <!-- Inhalt Datenschutz -->
+                <div id="privacy-content" class="legal-content hidden">
+                    <h5>Datenschutzerklärung</h5>
+                    <p>
+                        Wir legen größten Wert auf den Schutz Ihrer Daten. Um Sie in vollem Umfang über die Verwendung personenbezogener Daten zu informieren, bitten wir Sie, die folgenden Datenschutzhinweise zur Kenntnis zu nehmen.
+                    </p>
+                    <p>
+                        <strong>1. Verantwortliche Stelle</strong><br>
+                        Verantwortliche Stelle für die Datenerhebung, -verarbeitung und -nutzung im Sinne des Bundesdatenschutzgesetzes (BDSG) ist Max Mustermann (Kontaktdaten siehe Impressum).
+                    </p>
+                    <p>
+                        <strong>2. Erhebung und Speicherung personenbezogener Daten</strong><br>
+                        Beim Erstellen eines Kontos erheben wir folgende Daten: Vorname, E-Mail-Adresse. Diese Daten werden ausschließlich zur Bereitstellung der App-Funktionalität (z.B. Teilen von Kochbüchern) verwendet und auf sicheren Servern von Firebase (Google) gespeichert.
+                    </p>
+                    <p>
+                        <strong>3. Datenlöschung</strong><br>
+                        Ihre Daten bleiben gespeichert, solange Ihr Konto besteht. Bei Löschung Ihres Kontos werden alle personenbezogenen Daten unwiderruflich entfernt.
+                    </p>
+                    <p>
+                        <strong>4. Weitergabe von Daten</strong><br>
+                        Eine Weitergabe Ihrer persönlichen Daten an Dritte zu anderen als den im Folgenden aufgeführten Zwecken findet nicht statt.
+                    </p>
+                </div>
+
+                <!-- Zurück-Button -->
+                <button id="btn-hide-legal" class="account-data-close-btn">Zurück</button>
+            </div>
+            
+            <!-- Logout Button (unverändert) -->
             <button id="btn-logout" class="logout-button">Ausloggen</button>
         </div>
     </main>
 
+    <!-- Skripte (unverändert) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-
     <script type="module" src="./firebase-config.js"></script>
+    
+    <!-- Diese JS-Datei wird aktualisiert -->
     <script type="module" src="./account.js"></script> 
 
+    <!-- Navigations-Skript (unverändert) -->
     <script type="module">
-      // Importiere auth und db, da wir sie hier brauchen
       import { auth, db } from './firebase-config.js';
-
-      // Globale Variable für den Listener, damit wir ihn trennen können
       let invitationListener = null;
-
-      // Funktion zum Umschalten des Menüs
       const setupNavToggle = () => {
         const navToggleBtn = document.getElementById('nav-toggle-btn');
         if (navToggleBtn) {
@@ -134,15 +212,10 @@
           });
         }
       };
-
-      // Funktion zum Anzeigen/Verstecken der Punkte
       const updateNotificationDots = (hasInvites) => {
         const toggleDot = document.getElementById('nav-toggle-notification');
         const menuDot = document.getElementById('nav-account-notification');
-        
-        // Dieser Punkt existiert NUR auf account.html
         const accountPageDot = document.getElementById('account-invites-notification');
-
         if (hasInvites) {
           if (toggleDot) toggleDot.classList.remove('notification-dot-hidden');
           if (menuDot) menuDot.classList.remove('notification-dot-hidden');
@@ -153,36 +226,25 @@
           if (accountPageDot) accountPageDot.classList.add('notification-dot-hidden');
         }
       };
-
-      // Funktion, die auf neue Einladungen hört
       const listenForInvites = (userId) => {
-        // Trenne alten Listener, falls vorhanden
         if (invitationListener) {
           invitationListener();
         }
-
-        // Erstelle die Echtzeit-Query
         const invitesQuery = db.collection("invitations")
             .where("toUserId", "==", userId)
             .where("status", "==", "pending");
-
-        // Starte den Echtzeit-Listener
         invitationListener = invitesQuery.onSnapshot((snapshot) => {
             console.log(`Notification-Check: ${snapshot.size} Einladungen gefunden.`);
-            updateNotificationDots(!snapshot.empty); // Zeige/verstecke Punkte
+            updateNotificationDots(!snapshot.empty);
         }, (error) => {
             console.error("Fehler im Benachrichtigungs-Listener:", error);
-            updateNotificationDots(false); // Bei Fehler sicherheitshalber verstecken
+            updateNotificationDots(false);
         });
       };
-
-      // Auth-Wächter, der alles startet
       auth.onAuthStateChanged((user) => {
         if (user) {
-          // Nutzer ist eingeloggt, starte den Listener
           listenForInvites(user.uid);
         } else {
-          // Nutzer ist ausgeloggt, trenne Listener und verstecke Punkte
           if (invitationListener) {
             invitationListener();
             invitationListener = null;
@@ -190,8 +252,6 @@
           updateNotificationDots(false);
         }
       });
-
-      // Starte den Menü-Toggle-Listener, sobald das DOM geladen ist
       document.addEventListener('DOMContentLoaded', setupNavToggle);
     </script>
 

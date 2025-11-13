@@ -62,35 +62,29 @@
     color: #c7c7cc;
 }
 
-/* * NEU: Styling für den Spenden-Link (<a>-Tag)
- * Sorgt dafür, dass er wie ein .account-menu-item aussieht
- */
+/* Styling für den Spenden-Link (<a>-Tag) */
 .account-menu-link {
-    text-decoration: none; /* Entfernt die Link-Unterstreichung */
+    text-decoration: none; 
 }
 .account-menu-link span {
-    color: #333; /* Stellt die normale Textfarbe sicher */
+    color: #333; 
 }
 .account-menu-link .account-arrow {
-    color: #c7c7cc; /* Stellt die normale Icon-Farbe sicher */
+    color: #c7c7cc; 
 }
-/* ENDE: Neue Stile */
-
 
 /* Sektionen, die ein- und ausgeblendet werden */
 .account-data-display,
 .account-stats-display,
-.account-invites-display {
+.account-invites-display,
+.account-legal-display { /* NEU */
     background-color: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     padding: 1.5rem 1rem 1rem;
 }
 
-/* * --- HIER IST DIE WICHTIGE ÄNDERUNG ---
- * Wir erstellen eine allgemeine .hidden-Klasse,
- * die jetzt auf das Menü, den Titel und die Buttons angewendet wird.
-*/
+/* Allgemeine .hidden-Klasse (unverändert) */
 .hidden {
     display: none !important;
 }
@@ -98,38 +92,38 @@
 
 .account-data-display h4,
 .account-stats-display h4,
-.account-invites-display h4 {
+.account-invites-display h4,
+.account-legal-display h4 { /* NEU */
     margin-top: 0;
     margin-bottom: 1.5rem;
     border-bottom: 1px solid #f0f0f0;
     padding-bottom: 0.5rem;
 }
 
-/* --- START: Moderner "Zurück"-Button --- */
+/* Moderner "Zurück"-Button (unverändert) */
 .account-data-close-btn {
-    background-color: #f0f0f0; /* Heller grauer Hintergrund */
+    background-color: #f0f0f0; 
     border: none;
-    color: #007aff; /* Blaue Schrift */
+    color: #007aff; 
     cursor: pointer;
     font-size: 0.9rem;
-    font-weight: 500; /* Etwas fetter */
-    margin-top: 1.5rem; /* Mehr Abstand nach oben */
-    padding: 0.6rem 1rem; /* Padding für Button-Größe */
-    border-radius: 20px; /* "Pillen"-Form */
-    transition: background-color 0.2s, transform 0.1s; /* Sanfte Transition */
-    display: inline-block; /* Damit Padding funktioniert */
+    font-weight: 500; 
+    margin-top: 1.5rem; 
+    padding: 0.6rem 1rem; 
+    border-radius: 20px; 
+    transition: background-color 0.2s, transform 0.1s; 
+    display: inline-block; 
 }
 .account-data-close-btn:hover {
-    background-color: #e0e0e0; /* Dunkleres Grau beim Hover */
-    text-decoration: none; /* Kein Unterstreichen */
-    transform: scale(1.02); /* Leichter Zoom-Effekt */
+    background-color: #e0e0e0; 
+    text-decoration: none; 
+    transform: scale(1.02); 
 }
 .account-data-close-btn:active {
-    transform: scale(0.98); /* Klick-Effekt */
+    transform: scale(0.98); 
 }
-/* --- ENDE: Moderner "Zurück"-Button --- */
 
-/* Statistik-Zeilen */
+/* Statistik-Zeilen (unverändert) */
 .stat-item {
     display: flex;
     justify-content: space-between;
@@ -140,7 +134,7 @@
     color: #007aff;
 }
 
-/* Einladungs-Liste */
+/* Einladungs-Liste (unverändert) */
 #invites-list {
     display: flex;
     flex-direction: column;
@@ -185,4 +179,62 @@
 .btn-decline-invite {
     background-color: #ff3b30;
     color: white;
+}
+
+/* * NEU: Stile für "Über uns"-Sektion 
+*/
+
+/* Tab-Navigation (stark inspiriert von auth.css) */
+.legal-tab-group {
+    display: flex;
+    background-color: #f0f0f0;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+.legal-tab-btn {
+    flex: 1; 
+    padding: 0.75rem;
+    border: none;
+    background-color: transparent;
+    color: #555;
+    font-weight: 500;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.legal-tab-btn.active {
+    background-color: #007aff;
+    color: white;
+    font-weight: bold;
+}
+.legal-tab-btn:not(.active):hover {
+    background-color: #e0e0e0;
+}
+
+/* Container für den Text (Impressum/Datenschutz) */
+.legal-content {
+    background-color: #fdfdfd;
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+    padding: 1rem 1.5rem;
+    
+    /* Macht den Text scrollbar, falls er zu lang wird */
+    max-height: 40vh;
+    overflow-y: auto;
+
+    /* Styling für den Textinhalt */
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #333;
+}
+.legal-content h5 {
+    margin-top: 0;
+    font-size: 1.2rem;
+}
+.legal-content p {
+    margin-bottom: 1rem;
+}
+.legal-content a {
+    color: #007aff;
 }

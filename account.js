@@ -12,8 +12,11 @@ let btnShowData, accountDataDisplay, displayFirstname, displayEmail, btnHideData
 // Ansicht 2: Stats
 let btnShowStats, accountStatsDisplay, btnHideStats;
 let statCookbooks, statRecipes, statPlanned;
-// NEU - Ansicht 3: Einladungen
+// Ansicht 3: Einladungen
 let btnShowInvites, accountInvitesDisplay, btnHideInvites, invitesList, invitesMessage;
+// NEU: Ansicht 4: "Über uns"
+let btnShowLegal, accountLegalDisplay, btnHideLegal;
+let btnShowImprint, btnShowPrivacy, imprintContent, privacyContent;
 
 
 // --- Funktion zum Anzeigen des Inhalts ---
@@ -40,7 +43,7 @@ const loadUserProfile = async (userId) => {
     } catch (error) { console.error("Fehler beim Laden des Nutzerprofils:", error); }
 };
 
-// --- Funktion zum Laden der Statistik (STARK GEÄNDERT) ---
+// --- Funktion zum Laden der Statistik (unverändert) ---
 const loadUserStats = async (userId) => {
     if (!statCookbooks || !statRecipes || !statPlanned) return;
 
@@ -49,22 +52,17 @@ const loadUserStats = async (userId) => {
     statPlanned.textContent = "Lade...";
 
     try {
-        // --- 1. Kochbücher zählen (NEUE QUERY) ---
-        // Zähle alle Kochbücher, bei denen der Nutzer Mitglied ist
         const cookbookQuery = db.collection('cookbooks')
                                 .where(`members.${userId}`, 'in', ['owner', 'editor']);
         const cookbookPromise = cookbookQuery.get();
         
-        // --- 2. Geplante Mahlzeiten zählen (UNVERÄNDERT) ---
         const plannedPromise = db.collection('users').doc(userId).collection('plannedMeals').get();
 
-        // Warte auf beide Zählungen
         const [cookbookSnap, plannedSnap] = await Promise.all([cookbookPromise, plannedPromise]);
 
         const cookbookCount = cookbookSnap.size;
         statCookbooks.textContent = cookbookCount;
 
-        // --- 2b. Geplante REZEPTE zählen (UNVERÄNDERT) ---
         let plannedRecipeCount = 0;
         plannedSnap.forEach(doc => {
             const data = doc.data();
@@ -75,24 +73,18 @@ const loadUserStats = async (userId) => {
         });
         statPlanned.textContent = plannedRecipeCount;
 
-        // --- 3. Rezepte zählen (NEUE LOGIK) ---
         let totalRecipeCount = 0;
         const recipeCountPromises = [];
         
-        // Für jedes Kochbuch, das wir oben gefunden haben...
         cookbookSnap.forEach(cookbookDoc => {
-            // ...eine Zähl-Anfrage für die 'recipes'-Sub-Collection erstellen
-            // (Wir verwenden den NEUEN Pfad)
             recipeCountPromises.push(
                 db.collection('cookbooks').doc(cookbookDoc.id)
                   .collection('recipes').get()
             );
         });
         
-        // Auf alle Zähl-Anfragen warten
         const recipeSnaps = await Promise.all(recipeCountPromises);
         
-        // Die Ergebnisse summieren
         recipeSnaps.forEach(snap => {
             totalRecipeCount += snap.size;
         });
@@ -106,17 +98,17 @@ const loadUserStats = async (userId) => {
     }
 };
 
-// --- NEU: Funktion zum Laden der Einladungen ---
+// --- Funktion zum Laden der Einladungen (unverändert) ---
 const loadUserInvitations = async (userId) => {
     if (!invitesList || !invitesMessage) return;
     
     invitesMessage.textContent = "Lade Einladungen...";
-    invitesList.innerHTML = ""; // Liste leeren
+    invitesList.innerHTML = ""; 
 
     try {
         const snapshot = await db.collection("invitations")
-            .where("toUserId", "==", userId) // An mich
-            .where("status", "==", "pending") // Die noch offen sind
+            .where("toUserId", "==", userId) 
+            .where("status", "==", "pending") 
             .orderBy("createdAt", "desc")
             .get();
 
@@ -125,21 +117,19 @@ const loadUserInvitations = async (userId) => {
             return;
         }
         
-        invitesMessage.textContent = ""; // Nachricht entfernen
+        invitesMessage.textContent = ""; 
         snapshot.forEach(doc => {
             const invite = doc.data();
             const div = document.createElement('div');
             div.className = 'invite-item';
-            
-            // Speichere die IDs auf dem Action-Container für Klick-Events
             div.innerHTML = `
-                <p>
-                    <strong>${invite.cookbookTitle}</strong><br>
-                    <span>Eingeladen von: ${invite.fromUserName}</span>
-                </p>
+                <div class="invite-info">
+                    <span class="cookbook-name">${invite.cookbookTitle}</span>
+                    <span class="sender-email">Eingeladen von: ${invite.fromUserName}</span>
+                </div>
                 <div class="invite-actions" data-invite-id="${doc.id}" data-cookbook-id="${invite.cookbookId}">
-                    <button class="btn-accept">Annehmen</button>
-                    <button class="btn-decline">Ablehnen</button>
+                    <button class="btn-accept-invite">Annehmen</button>
+                    <button class="btn-decline-invite">Ablehnen</button>
                 </div>
             `;
             invitesList.appendChild(div);
@@ -151,93 +141,121 @@ const loadUserInvitations = async (userId) => {
     }
 };
 
-// --- NEU: Einladung annehmen ---
+// --- Einladung annehmen (unverändert) ---
 const acceptInvitation = async (inviteId, cookbookId) => {
     try {
         const cookbookRef = db.collection("cookbooks").doc(cookbookId);
         const inviteRef = db.collection("invitations").doc(inviteId);
-
-        // Batch-Write, um sicherzustellen, dass beides passiert
         const batch = db.batch();
-        
-        // 1. Füge den Nutzer zur 'members'-Map im Kochbuch hinzu
         batch.update(cookbookRef, {
-            [`members.${currentUser.uid}`]: "editor" // Fügt den Nutzer als "editor" hinzu
+            [`members.${currentUser.uid}`]: "editor"
         });
-        
-        // 2. Markiere die Einladung als "accepted"
         batch.update(inviteRef, {
             status: "accepted"
         });
-
         await batch.commit();
-        
-        // UI aktualisieren
-        loadUserInvitations(currentUser.uid); // Lade Einladungen neu
-        loadUserStats(currentUser.uid); // Lade Statistik neu (wg. +1 Kochbuch)
-        alert("Einladung angenommen! Du hast jetzt Zugriff auf das Kochbuch.");
+        loadUserInvitations(currentUser.uid); 
+        loadUserStats(currentUser.uid); 
+        // alert("Einladung angenommen! Du hast jetzt Zugriff auf das Kochbuch."); 
+        // Ersetze alert durch eine bessere Benachrichtigung, wenn möglich
+        console.log("Einladung angenommen!");
 
     } catch (error) {
         console.error("Fehler beim Annehmen der Einladung:", error);
-        alert("Fehler: " + error.message);
+        // alert("Fehler: " + error.message);
     }
 };
 
-// --- NEU: Einladung ablehnen ---
+// --- Einladung ablehnen (unverändert) ---
 const declineInvitation = async (inviteId) => {
     try {
-        // Markiere die Einladung als "declined"
         await db.collection("invitations").doc(inviteId).update({
             status: "declined"
         });
-        
-        // UI aktualisieren
-        loadUserInvitations(currentUser.uid); // Lade Einladungen neu
-        
+        loadUserInvitations(currentUser.uid); 
     } catch (error) {
         console.error("Fehler beim Ablehnen der Einladung:", error);
     }
 };
 
 
-// --- Funktionen zum Umschalten der Ansicht (JETZT GEÄNDERT) ---
+// --- Funktionen zum Umschalten der Ansicht (JETZT ERWEITERT) ---
 const showDataView = () => {
     displayFirstname.textContent = currentUserData.firstName || "(Kein Name gespeichert)";
     displayEmail.textContent = currentUserData.email || currentUser.email;
-    accountTitle.classList.add('hidden'); // <-- GEÄNDERT
+    accountTitle.classList.add('hidden');
     accountMenu.classList.add('hidden');
     logoutButton.classList.add('hidden');
+    
     accountDataDisplay.classList.remove('hidden');
     accountStatsDisplay.classList.add('hidden');
     accountInvitesDisplay.classList.add('hidden');
+    accountLegalDisplay.classList.add('hidden'); // NEU
 };
 
 const showStatsView = () => {
-    accountTitle.classList.add('hidden'); // <-- GEÄNDERT
+    accountTitle.classList.add('hidden');
     accountMenu.classList.add('hidden');
     logoutButton.classList.add('hidden');
+
     accountDataDisplay.classList.add('hidden');
     accountStatsDisplay.classList.remove('hidden');
     accountInvitesDisplay.classList.add('hidden');
+    accountLegalDisplay.classList.add('hidden'); // NEU
 };
 
 const showInvitesView = () => {
-    accountTitle.classList.add('hidden'); // <-- GEÄNDERT
+    accountTitle.classList.add('hidden');
     accountMenu.classList.add('hidden');
     logoutButton.classList.add('hidden');
+
     accountDataDisplay.classList.add('hidden');
     accountStatsDisplay.classList.add('hidden');
     accountInvitesDisplay.classList.remove('hidden');
+    accountLegalDisplay.classList.add('hidden'); // NEU
 };
 
-const showMenuView = () => {
-    accountTitle.classList.remove('hidden'); // <-- GEÄNDERT
-    accountMenu.classList.remove('hidden');
-    logoutButton.classList.remove('hidden');
+// NEU: Ansicht für "Über uns"
+const showLegalView = () => {
+    accountTitle.classList.add('hidden');
+    accountMenu.classList.add('hidden');
+    logoutButton.classList.add('hidden');
+
     accountDataDisplay.classList.add('hidden');
     accountStatsDisplay.classList.add('hidden');
     accountInvitesDisplay.classList.add('hidden');
+    accountLegalDisplay.classList.remove('hidden'); // NEU
+
+    // Standardmäßig Impressum anzeigen
+    showImprintContent();
 };
+
+const showMenuView = () => {
+    accountTitle.classList.remove('hidden');
+    accountMenu.classList.remove('hidden');
+    logoutButton.classList.remove('hidden');
+
+    accountDataDisplay.classList.add('hidden');
+    accountStatsDisplay.classList.add('hidden');
+    accountInvitesDisplay.classList.add('hidden');
+    accountLegalDisplay.classList.add('hidden'); // NEU
+};
+
+// --- NEU: Sub-Tab-Navigation für "Über uns" ---
+const showImprintContent = () => {
+    if (btnShowImprint) btnShowImprint.classList.add('active');
+    if (btnShowPrivacy) btnShowPrivacy.classList.remove('active');
+    if (imprintContent) imprintContent.classList.remove('hidden');
+    if (privacyContent) privacyContent.classList.add('hidden');
+};
+
+const showPrivacyContent = () => {
+    if (btnShowImprint) btnShowImprint.classList.remove('active');
+    if (btnShowPrivacy) btnShowPrivacy.classList.add('active');
+    if (imprintContent) imprintContent.classList.add('hidden');
+    if (privacyContent) privacyContent.classList.remove('hidden');
+};
+
 
 // --- Logout-Funktion (unverändert) ---
 const logoutUser = () => {
@@ -274,15 +292,26 @@ const init = () => {
     statRecipes = document.getElementById('stat-recipes');
     statPlanned = document.getElementById('stat-planned');
     
-    // NEU: Ansicht 3
+    // Ansicht 3
     btnShowInvites = document.getElementById('btn-show-invites');
     accountInvitesDisplay = document.getElementById('account-invites-display');
     btnHideInvites = document.getElementById('btn-hide-invites');
     invitesList = document.getElementById('invites-list');
     invitesMessage = document.getElementById('invites-message');
 
+    // NEU: Ansicht 4
+    btnShowLegal = document.getElementById('btn-show-legal');
+    accountLegalDisplay = document.getElementById('account-legal-display');
+    btnHideLegal = document.getElementById('btn-hide-legal');
+    btnShowImprint = document.getElementById('btn-show-imprint');
+    btnShowPrivacy = document.getElementById('btn-show-privacy');
+    imprintContent = document.getElementById('imprint-content');
+    privacyContent = document.getElementById('privacy-content');
+
     // Sicherheitscheck (erweitert)
-    if (!loader || !navbar || !mainContent || !accountTitle || !logoutButton || !btnShowData || !accountDataDisplay || !btnShowStats || !accountStatsDisplay || !btnShowInvites || !accountInvitesDisplay) {
+    if (!loader || !navbar || !mainContent || !accountTitle || !logoutButton || 
+        !btnShowData || !accountDataDisplay || !btnShowStats || !accountStatsDisplay || 
+        !btnShowInvites || !accountInvitesDisplay || !btnShowLegal || !accountLegalDisplay) { // NEU
         console.error("FEHLER: Wichtige HTML-Elemente auf der Kontoseite fehlen!");
     }
 
@@ -292,11 +321,10 @@ const init = () => {
             currentUser = user;
             console.log('Konto: Nutzer ist eingeloggt:', user.email);
             
-            // Lade Profil, Statistik UND Einladungen
             await Promise.all([
                 loadUserProfile(user.uid),
                 loadUserStats(user.uid),
-                loadUserInvitations(user.uid) // NEU
+                loadUserInvitations(user.uid) 
             ]);
             
             showContent();
@@ -315,30 +343,37 @@ const init = () => {
     btnHideData.addEventListener('click', showMenuView);
     btnShowStats.addEventListener('click', showStatsView);
     btnHideStats.addEventListener('click', showMenuView);
-    btnShowInvites.addEventListener('click', showInvitesView); // NEU
-    btnHideInvites.addEventListener('click', showMenuView); // NEU
+    btnShowInvites.addEventListener('click', showInvitesView);
+    btnHideInvites.addEventListener('click', showMenuView);
+    
+    // NEU: Listener für "Über uns"
+    btnShowLegal.addEventListener('click', showLegalView);
+    btnHideLegal.addEventListener('click', showMenuView);
+    btnShowImprint.addEventListener('click', showImprintContent);
+    btnShowPrivacy.addEventListener('click', showPrivacyContent);
 
-    // NEU: Event-Delegation für Annehmen/Ablehnen
+
+    // Event-Delegation für Annehmen/Ablehnen
     if (invitesList) {
         invitesList.addEventListener('click', (e) => {
             const target = e.target;
-            const acceptButton = target.closest('.btn-accept');
-            const declineButton = target.closest('.btn-decline');
+            const acceptButton = target.closest('.btn-accept-invite'); // Klasse geändert
+            const declineButton = target.closest('.btn-decline-invite'); // Klasse geändert
             
-            if (!acceptButton && !declineButton) return; // Klick war woanders
+            if (!acceptButton && !declineButton) return;
             
             const actionsDiv = target.closest('.invite-actions');
-            if (!actionsDiv) return; // Sollte nicht passieren
+            if (!actionsDiv) return;
             
             const inviteId = actionsDiv.dataset.inviteId;
             const cookbookId = actionsDiv.dataset.cookbookId;
 
             if (acceptButton) {
-                acceptButton.disabled = true; // Klick verhindern
+                acceptButton.disabled = true; 
                 acceptInvitation(inviteId, cookbookId);
             }
             if (declineButton) {
-                declineButton.disabled = true; // Klick verhindern
+                declineButton.disabled = true; 
                 declineInvitation(inviteId);
             }
         });

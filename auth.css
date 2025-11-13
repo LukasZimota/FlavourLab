@@ -1,73 +1,18 @@
 /* --- Login-Seite --- */
 
-/* Spezielles Body-Styling NUR für die Login-Seite */
-body.login-page {
-    padding-top: 0; 
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
-.login-container {
-    background-color: #ffffff;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-    width: 350px;
-    text-align: center;
-}
-.form-group {
-    margin-bottom: 1rem;
-    text-align: left;
-}
-.form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #555;
-}
-.form-group input {
+/* NEU: Container für das Hintergrundbild */
+.login-background {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    padding: 0.75rem;
-    box-sizing: border-box; 
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    height: 100%;
+    /* Ein schönes 16:9 Koch-Bild. Du kannst diese URL jederzeit austauschen. */
+    background-image: url("BG-image.png");
+    background-size: cover;
+    background-position: center;
+    z-index: -1; /* Legt es hinter alles andere */
 }
-.button-group {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-top: 1.5rem;
-}
-.button-group button {
-    flex-grow: 1;
-    padding: 0.75rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: bold;
-    color: white;
-}
-#btn-login {
-    background-color: #007aff;
-}
-#btn-login:hover {
-    background-color: #0056b3;
-}
-#btn-register {
-    background-color: #34c759;
-}
-#btn-register:hover {
-    background-color: #2a9e48;
-}
-.error {
-    color: #ff3b30;
-    margin-top: 1rem;
-    font-size: 0.9rem;
-    min-height: 1.2em; 
-
-}
-
-/* --- Login-Seite --- */
 
 /* Spezielles Body-Styling NUR für die Login-Seite */
 body.login-page {
@@ -76,15 +21,27 @@ body.login-page {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    /* Entfernt den Standard-Hintergrund, da wir jetzt ein Bild haben */
+    background-color: transparent; 
 }
+
+/* NEU: Semi-transparente Login-Box */
 .login-container {
-    background-color: #ffffff;
+    /* Semi-transparenter Hintergrund (85% Deckkraft) */
+    background-color: rgba(255, 255, 255, 0.273);
+    
+    /* "Frosted Glass"-Effekt für moderne Browser */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(10px); /* Für Safari */
+
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Leichter Rand für den Glas-Effekt */
     padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border-radius: 12px; /* Etwas runder */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1); /* Weicherer Schatten */
     width: 350px;
     text-align: center;
 }
+
 .form-group {
     margin-bottom: 1rem;
     text-align: left;
@@ -92,43 +49,49 @@ body.login-page {
 .form-group label {
     display: block;
     margin-bottom: 0.5rem;
-    color: #555;
+    color: #333; /* Dunklere Schrift für besseren Kontrast */
+    font-weight: 500; /* Etwas fetter */
 }
 .form-group input {
     width: 100%;
     padding: 0.75rem;
     box-sizing: border-box; 
     border: 1px solid #ddd;
-    border-radius: 4px;
+    border-radius: 6px; /* Etwas runder */
+    background-color: rgba(255, 255, 255, 0.7); /* Leicht transparente Inputs */
 }
+.form-group input:focus {
+    outline: none;
+    border-color: #007aff;
+    background-color: #fff;
+}
+
 .error {
-    color: #ff3b30;
+    color: #d90000; /* Dunkleres Rot für besseren Kontrast */
     margin-top: 1rem;
     font-size: 0.9rem;
+    font-weight: 500;
     min-height: 1.2em; 
+
 }
 
-/* --- NEU: Stile für Tabs und Action Button --- */
-
-/* Versteckt das Vorname-Feld */
+/* --- Stile für Tabs und Action Button (unverändert) --- */
 .form-group.hidden {
     display: none;
 }
-
-/* Container für die "Login" / "Registrieren" Tabs */
 .tab-group {
     display: flex;
-    background-color: #f0f0f0;
+    background-color: rgba(0, 0, 0, 0.05); /* Angepasster Tab-Hintergrund */
     border-radius: 6px;
     margin-bottom: 1.5rem;
     overflow: hidden;
 }
 .tab-btn {
-    flex: 1; /* Beide nehmen 50% Platz */
+    flex: 1; 
     padding: 0.75rem;
     border: none;
     background-color: transparent;
-    color: #555;
+    color: #333;
     font-weight: 500;
     font-size: 1rem;
     cursor: pointer;
@@ -140,10 +103,8 @@ body.login-page {
     font-weight: bold;
 }
 .tab-btn:not(.active):hover {
-    background-color: #e0e0e0;
+    background-color: rgba(0, 0, 0, 0.1);
 }
-
-/* Der Haupt-Button ("Login" oder "Registrieren") */
 .action-btn {
     width: 100%;
     padding: 0.75rem;
@@ -152,7 +113,7 @@ body.login-page {
     cursor: pointer;
     font-weight: bold;
     color: white;
-    background-color: #007aff; /* Standard (Login-Blau) */
+    background-color: #007aff; 
     font-size: 1rem;
     margin-top: 1rem;
     transition: background-color 0.2s;
@@ -160,9 +121,8 @@ body.login-page {
 .action-btn:hover {
     background-color: #0056b3;
 }
-/* Spezieller Stil, wenn im Registrier-Modus */
 .action-btn.register-mode {
-    background-color: #34c759; /* Grün (Registrieren) */
+    background-color: #34c759; 
 }
 .action-btn.register-mode:hover {
     background-color: #2a9e48;

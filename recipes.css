@@ -1,10 +1,13 @@
+/* V2 - Diese Datei ist neu, um Cache-Probleme zu beheben */
+
 /* --- CSS-Variablen für Tag-Farben --- */
 :root {
-    --tag-color-vegan: #2ECC71;      /* Grün */
-    --tag-color-vegetarisch: #3498DB; /* Blau */
-    --tag-color-glutenfrei: #E67E22;  /* Orange */
-    --tag-color-laktosefrei: #F1C40F; /* Gelb */
-    --tag-color-schnell: #9B59B6;     /* Lila */
+    --tag-color-1: #007aff; /* Blau (Vegan) */
+    --tag-color-2: #34c759; /* Grün (Vegetarisch) */
+    --tag-color-3: #ff9500; /* Orange (Glutenfrei) */
+    --tag-color-4: #5856d6; /* Lila (Laktosefrei) */
+    --tag-color-5: #ff3b30; /* Rot (Schnell) */
+    --tag-color-default: #8E8E93; /* Grau für neue Tags */
 }
 
 /* --- Rezept-Seite Layout (Bestehend) --- */
@@ -23,6 +26,10 @@
 .active-filters-container { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; padding-bottom: 1rem; margin-top: -0.5rem; }
 .active-filter-pill { display: inline-flex; align-items: center; gap: 0.4rem; background-color: #e0eafb; color: #0056b3; padding: 0.25rem 0.75rem; border-radius: 15px; font-size: 0.85rem; font-weight: 500; }
 .active-filter-pill button { background: none; border: none; color: #0056b3; font-size: 1rem; font-weight: bold; cursor: pointer; padding: 0 0 0 0.2rem; line-height: 1; opacity: 0.7; }
+.active-filter-pill.active { /* Gilt für Filter-Modal */
+    color: white;
+}
+.active-filter-pill.active button { color: white; }
 .active-filter-pill button:hover { opacity: 1; }
 .clear-all-filters-btn { background: none; border: none; color: #ff3b30; cursor: pointer; font-size: 0.8rem; font-weight: 500; text-decoration: underline; padding: 0.25rem; margin-left: 0.5rem; }
 .clear-all-filters-btn:hover { color: #c70000; }
@@ -42,7 +49,7 @@
 .add-recipe-tile:hover { background-color: #fff; border-color: #007aff; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
 .add-recipe-tile:hover .plus-icon { color: #007aff; transform: scale(1.05); }
 
-/* --- "Rezept anzeigen"-Modal (Bestehend) --- */
+/* --- "Rezept anzeigen"-Modal (Bestehend, aber .display-tag-pill geändert) --- */
 #view-recipe-content { line-height: 1.6; }
 #view-recipe-content img { display: block; width: 100%; max-width: 100%; height: auto; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 8px; margin-bottom: 1.5rem; background-color: #eee; }
 #view-recipe-content h3 { margin-top: 0; font-size: 1.8rem; color: #007aff; }
@@ -57,7 +64,19 @@
 #view-recipe-content .display-rating { font-size: 1.5rem; color: #f39c12; margin-bottom: 1rem; }
 #view-recipe-content .display-rating[data-rating="0"] { color: #ddd; font-size: 1rem; font-style: italic; }
 #view-recipe-content .display-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.5rem; }
-#view-recipe-content .display-tag-pill { background-color: #f0f0f0; color: #555; padding: 0.3rem 0.8rem; border-radius: 15px; font-size: 0.9rem; }
+/* NEU: Styling für Anzeige-Tag (dynamische Farbe) */
+#view-recipe-content .display-tag-pill {
+    color: white; /* Text ist fast immer weiß */
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    /* Hintergrundfarbe wird inline gesetzt, fallback: */
+    background-color: var(--tag-color-default); 
+}
+#view-recipe-content .display-tag-pill[data-tag="Laktosefrei"] {
+    color: black; /* Spezielle Regel für helles Lila */
+}
 #view-recipe-content .display-notes { background-color: #fdfdf5; border: 1px solid #eee; border-radius: 4px; padding: 1rem; margin-top: 0.5rem; font-style: italic; white-space: pre-wrap; }
 
 
@@ -69,9 +88,11 @@
 #create-recipe-modal .modal-form { gap: 0.75rem; }
 #create-recipe-modal .modal-form label { font-weight: 600; font-size: 0.9rem; color: #333; margin-bottom: 0.25rem; margin-top: 0.75rem; }
 #create-recipe-modal .modal-form input[type="text"],
+#create-recipe-modal .modal-form input[type="number"],
 #create-recipe-modal .modal-form textarea { background-color: #f9f9f9; border: 1px solid #eee; border-radius: 8px; padding: 12px; font-size: 1rem; width: 100%; }
 #create-recipe-modal .modal-form textarea { min-height: 80px; resize: vertical; }
 #create-recipe-modal .modal-form input[type="text"]:focus,
+#create-recipe-modal .modal-form input[type="number"]:focus,
 #create-recipe-modal .modal-form textarea:focus { outline: none; border-color: #007aff; background-color: #fff; box-shadow: 0 0 0 2px rgba(0,122,255,0.1); }
 
 /* 2. Bild-Input-Gruppe (Bestehend) */
@@ -82,48 +103,47 @@
 .image-source-btn { display: flex; align-items: center; gap: 0.25rem; background-color: #f0f0f0; border: 1px solid #ddd; border-radius: 6px; padding: 0 0.75rem; height: 46px; font-weight: 500; color: #333; cursor: not-allowed; opacity: 0.7; }
 .image-source-btn svg { color: #777; }
 
-/* 3. Portionen (NEU: Ausgerichtet & Icon-Farbe) */
+/* 3. Portionen (ÜBERARBEITET) */
 .form-group { flex: 1; margin-top: 0.75rem; }
 .servings-group { 
     display: grid;
     grid-template-columns: repeat(4, 1fr); 
     gap: 0.5rem; 
-    align-items: stretch; /* NEU: Erzwingt gleiche Höhe */
+    align-items: stretch; /* Sorgt für gleiche Höhe */
     margin-top: 0.5rem; 
 }
 .serving-btn { 
     background-color: #fff; border: 1px solid #ccc; 
-    height: 44px; 
-    font-size: 1rem; font-weight: 500; 
-    color: #333; /* NEU: Textfarbe für Icon */
+    height: auto; /* Höhe automatisch anpassen */
+    aspect-ratio: 1 / 1; /* Macht die Buttons quadratisch */
+    font-size: 1.2rem; font-weight: 500; 
+    color: #333; /* Standard-Text/Icon-Farbe (für inaktiv) */
     cursor: pointer; transition: all 0.2s;
     display: flex;
+    flex-direction: column; /* Icon über Text */
     align-items: center;
     justify-content: center;
     gap: 0.25rem;
     border-radius: 8px; 
-    padding: 0;
+    padding: 0.5rem;
 }
 .serving-btn svg {
-    width: 14px;
-    height: 14px;
-    margin-top: -1px; 
-    /* color: #333; (Entfernt, nutzt 'fill="currentColor"') */
-    transition: color 0.2s;
+    width: 16px;
+    height: 16px;
 }
 .serving-btn:hover { background-color: #f5f5f5; border-color: #999; }
 .serving-btn.active { 
     background-color: #007aff; 
-    color: white; /* NEU: Setzt Text & Icon-Farbe auf weiß */
+    color: white; /* Icon-Farbe wird weiß */
     border-color: #007aff; 
     font-weight: bold; 
 }
-/* .serving-btn.active svg { color: white; } (Nicht mehr nötig dank currentColor) */
-
 .serving-custom-wrapper {
     position: relative;
     width: 100%; 
-    height: 44px; /* Einheitliche Höhe (unverändert) */
+    height: auto; /* Höhe automatisch anpassen */
+    aspect-ratio: 1 / 1; /* Macht die Box quadratisch */
+    display: flex; /* Für Zentrierung */
 }
 .serving-custom-input { 
     background-color: #f9f9f9; border: 1px solid #eee; 
@@ -131,7 +151,7 @@
     width: 100%; 
     height: 100%; 
     text-align: center; 
-    font-size: 1rem;
+    font-size: 1rem; 
     padding: 0 0.5rem; 
     box-sizing: border-box;
 }
@@ -152,156 +172,224 @@
 .rating-group:hover .rating-star:hover ~ .rating-star::before { content: '☆'; color: #e0e0e0; }
 .rating-group:hover .rating-star.active ~ .rating-star::before { color: #e0e0e0; }
 
-/* 5. Tags (NEU: Redesign "Füll-Pillen") */
-.tag-selection-group { 
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 5 nebeneinander */
-    gap: 0.5rem; 
-    margin-bottom: 1rem;
+/* * 5. NEUES TAG-SYSTEM 
+*/
+/* Container für die Pillen (ausgewählte & Vorschläge) */
+.tag-pill-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    min-height: 40px; /* Mindesthöhe, auch wenn leer */
 }
-.tag-btn-pille { 
-    border: 2px solid #ccc; /* Standard-Rand */
-    background-color: #fff; /* Standard-Hintergrund (leer) */
-    color: #555; /* Standard-Textfarbe */
-    padding: 0.4rem 0.2rem; /* Vertikal / Horizontal */
-    border-radius: 20px; 
+/* Vorschlags-Container hat keinen oberen Rand */
+.tag-pill-container.suggestions {
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    background-color: #fdfdfd;
+    padding-top: 0.75rem;
+    margin-top: -0.75rem; /* Dockt an das Input-Feld an */
+}
+/* Tag-Eingabefeld */
+.tag-input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem; /* Abstand zu den ausgewählten Tags */
+}
+#modal-tag-input {
+    flex-grow: 1;
+    margin: 0;
+}
+#btn-add-tag { 
+    background-color: #007aff !important; 
+    color: white !important; 
+    border: none; 
+    border-radius: 50%; /* Komplett rund */
     cursor: pointer; 
-    font-size: 0.75rem; /* Sehr klein */
-    font-weight: 600; 
-    text-align: center; 
-    transition: all 0.2s; 
+    font-weight: 500; 
+    flex-shrink: 0; 
+    width: 44px; /* Angepasst */
+    height: 44px; /* Angepasst */
+    padding: 0; 
+    font-size: 1.8rem; /* Größeres Plus-Zeichen */
+    line-height: 42px; /* Zentriert das Plus */
+    margin-top: 0; 
+    transition: background-color 0.2s, transform 0.1s; 
 }
-/* Farben definieren */
-.tag-btn-pille[data-tag="Vegan"] { border-color: var(--tag-color-vegan); color: var(--tag-color-vegan); }
-.tag-btn-pille[data-tag="Vegetarisch"] { border-color: var(--tag-color-vegetarisch); color: var(--tag-color-vegetarisch); }
-.tag-btn-pille[data-tag="Glutenfrei"] { border-color: var(--tag-color-glutenfrei); color: var(--tag-color-glutenfrei); }
-.tag-btn-pille[data-tag="Laktosefrei"] { border-color: var(--tag-color-laktosefrei); color: var(--tag-color-laktosefrei); }
-.tag-btn-pille[data-tag="Schnell"] { border-color: var(--tag-color-schnell); color: var(--tag-color-schnell); }
-/* Hover-Effekt (leicht dunkler) */
-.tag-btn-pille:not(.active):hover { background-color: #f5f5f5; }
-/* Aktiv-Status (Füllen) */
-.tag-btn-pille.active[data-tag="Vegan"] { background-color: var(--tag-color-vegan) !important; color: white !important; }
-.tag-btn-pille.active[data-tag="Vegetarisch"] { background-color: var(--tag-color-vegetarisch) !important; color: white !important; }
-.tag-btn-pille.active[data-tag="Glutenfrei"] { background-color: var(--tag-color-glutenfrei) !important; color: white !important; }
-.tag-btn-pille.active[data-tag="Laktosefrei"] { background-color: var(--tag-color-laktosefrei) !important; color: black !important; } /* Gelb braucht schwarzen Text */
-.tag-btn-pille.active[data-tag="Schnell"] { background-color: var(--tag-color-schnell) !important; color: white !important; }
-/* ENDE Tag Redesign */
+#btn-add-tag:hover { 
+    background-color: #0056b3 !important; 
+    transform: scale(1.05);
+}
+/* Style für eine einzelne Tag-Pille */
+.tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.25rem 0.75rem;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s;
+    /* Standard (Leer-Design) */
+    background-color: #fff;
+    border: 1.5px solid var(--tag-color-default);
+    color: var(--tag-color-default);
+}
+/* Aktiv-Zustand (Gefüllt-Design) */
+.tag-pill.active {
+    background-color: var(--tag-color-default);
+    color: white;
+}
+/* Spezielle Regel für Laktosefrei (wg. heller Farbe) */
+.tag-pill[data-tag="Laktosefrei"].active {
+    color: #000;
+}
+/* Vorschlags-Pillen haben einen Hover-Effekt */
+.tag-pill.suggestion:hover {
+    background-color: #f5f5f5;
+}
+/* Kleiner "x"-Knopf in den *ausgewählten* Pillen */
+.tag-pill .tag-remove-btn {
+    background: none;
+    border: none;
+    color: inherit; /* Nimmt Farbe der Pille an */
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 0 0 0.2rem;
+    line-height: 1;
+    opacity: 0.7;
+}
+.tag-pill .tag-remove-btn:hover {
+    opacity: 1;
+}
 
+/* --- 6. & 7. Zutaten- & Schritte-Listen (ÜBERARBEITET) --- */
+.ingredient-input-group, .step-input-group { 
+    display: flex; gap: 0.5rem; align-items: center; 
+}
+.ingredient-input-group input, .step-input-group input { flex-grow: 1; margin: 0; }
 
-/* 6. & 7. Zutaten & Schritte (Input-Gruppen Bestehend) */
-.ingredient-input-group, .step-input-group { display: flex; gap: 0.5rem; align-items: center; }
-.ingredient-input-group input, .step-input-group input { flex-grow: 1; }
 #btn-add-ingredient, #btn-add-step { 
-    background-color: #007aff !important; color: white !important; border: none; 
-    border-radius: 50%; cursor: pointer; font-weight: 500; flex-shrink: 0; 
-    width: 40px; height: 40px; padding: 0; font-size: 1.8rem; line-height: 38px; 
-    margin-top: 0; transition: background-color 0.2s, transform 0.1s; 
+    background-color: #007aff !important; color: white !important; 
+    border: none; border-radius: 50%; cursor: pointer; 
+    font-weight: 500; flex-shrink: 0; 
+    width: 44px; height: 44px; padding: 0; 
+    font-size: 1.8rem; line-height: 42px; 
+    margin-top: 0; 
+    transition: background-color 0.2s, transform 0.1s; 
 }
+#btn-add-ingredient:hover, #btn-add-step:hover { 
+    background-color: #0056b3 !important; 
+    transform: scale(1.05);
+}
+/* Spezieller "Häkchen"-Look im Edit-Modus */
 #btn-add-ingredient.edit-mode, #btn-add-step.edit-mode {
     background-color: #34c759 !important; /* Grün */
-    font-size: 1.5rem; /* Kleineres Häkchen */
+    font-size: 1.5rem;
+    content: '✔'; /* Wird per JS gesetzt */
 }
 #btn-add-ingredient.edit-mode:hover, #btn-add-step.edit-mode:hover {
-     background-color: #2a9E48 !important;
+    background-color: #2a9e48 !important; /* Dunkelgrün */
 }
 
-
-/* NEU: Listen-Container (Vergrößert) */
+/* Listen-Container */
 #ingredient-list, #step-list { 
-    margin-top: 0.5rem; margin-bottom: 1rem; 
-    background-color: #ffffff; border: 1px solid #ddd; 
-    border-radius: 8px; padding: 0.75rem; /* Padding für den Container */
-    min-height: 50px; 
-    max-height: 220px; /* VERGRÖSSERT */
+    margin-top: 0.5rem; 
+    margin-bottom: 1rem; 
+    background-color: #f9f9f9; /* Heller Hintergrund für den Container */
+    border: 1px solid #eee; 
+    border-radius: 8px; 
+    padding: 0.5rem; /* Padding für den Container */
+    min-height: 100px; 
+    max-height: 220px; /* Mehr Höhe */
     overflow-y: auto; 
-    list-style: none; padding-left: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem; /* Abstand zwischen den Bubbles */
 }
 #step-list { counter-reset: step-counter; }
 
-/* NEU: Bubble-Styling (Items IN der Liste) */
+/* Listen-Eintrag (Bubble) */
 #ingredient-list li, #step-list li { 
+    position: relative; /* Wichtig für die Buttons */
+    background-color: #fff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 0.75rem 1rem; /* Padding (links) & mehr vertikal */
+    padding-right: 60px; /* Platz für die Buttons rechts */
     display: flex; 
-    align-items: center; /* Vertikale Zentrierung */
-    position: relative;
-    background-color: #f9f9f9; 
-    border-radius: 6px; 
-    padding: 0.75rem 1rem; /* Gleiches Padding links/rechts */
-    margin-bottom: 0.5rem; 
-    border: 1px solid #f0f0f0;
-}
-#ingredient-list li:last-child, #step-list li:last-child {
-    margin-bottom: 0;
-}
-/* NEU: Symbol/Nummer Styling */
-#ingredient-list li::before, #step-list li::before { 
-    flex-shrink: 0;
-    min-width: 1.2rem;
-    text-align: right;
-    margin-right: 0.75rem; /* Abstand rechts vom Symbol/Nummer */
-    color: #888; 
-    /* line-height entfernt, align-items: center auf li reicht */
-}
-#ingredient-list li::before { content: '•'; font-size: 1.1rem; }
-#step-list li { counter-increment: step-counter; }
-#step-list li::before { content: counter(step-counter) "."; color: #333; font-weight: 600; }
-/* NEU: Text-Span */
-.list-item-text {
-    flex-grow: 1; /* Nimmt Platz ein */
+    align-items: center; 
     word-break: break-word; /* Bricht lange Wörter um */
-    padding-right: 60px; /* Hält den Text von den Buttons fern */
-    line-height: 1.5; /* Hilft bei Zeilenumbrüchen */
 }
 
+/* Zähler/Punkte (Bestehend) */
+#ingredient-list li::before {
+    content: '•'; color: #888; 
+    margin-right: 0.75rem; 
+    font-size: 1.1rem; line-height: 1;
+    flex-shrink: 0;
+}
+#step-list li { counter-increment: step-counter; }
+#step-list li::before {
+    content: counter(step-counter) "."; 
+    color: #333; font-weight: 600; 
+    margin-right: 0.75rem; 
+    min-width: 1.2rem; text-align: right;
+    line-height: 1;
+    flex-shrink: 0;
+}
 
-/* NEU: Container für Stift/Papierkorb */
+/* NEU: Stift/Papierkorb-Buttons (ersetzt '...'-Menü) */
 .item-actions {
     position: absolute;
-    right: 6px;
+    right: 8px;
     top: 50%;
     transform: translateY(-50%); /* Vertikal zentriert */
     display: flex;
-    gap: 2px;
-    opacity: 0; /* Standardmäßig versteckt */
-    transition: opacity 0.2s ease-in-out;
-    pointer-events: none; /* Wichtig, damit man nicht aus Versehen klickt */
+    gap: 0.25rem;
+    opacity: 0; /* Standardmäßig unsichtbar */
+    transition: opacity 0.15s ease-in-out;
 }
-/* Anzeigen beim Hovern über der Bubble (li) */
+/* Beim Hovern über die Bubble sichtbar machen */
 #ingredient-list li:hover .item-actions,
 #step-list li:hover .item-actions {
     opacity: 1;
-    pointer-events: auto; /* Klickbar machen */
 }
-/* NEU: Styling für die einzelnen Action-Buttons (Stift/Papierkorb) */
 .item-action-btn {
     background: none;
     border: none;
-    color: #aaa; /* Startet grau */
+    border-radius: 50%;
     width: 28px;
     height: 28px;
-    border-radius: 50%;
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 0;
+    cursor: pointer;
+    color: #999; /* Dezent grau */
     transition: background-color 0.2s, color 0.2s;
 }
 .item-action-btn svg {
     width: 14px;
     height: 14px;
 }
+.item-action-btn:hover {
+    background-color: #f0f0f0;
+}
 .item-action-btn.menu-btn-edit-item:hover {
-    background-color: #e0eafb;
-    color: #007aff; /* Blau für Bearbeiten */
+    color: #007aff; /* Blau */
 }
 .item-action-btn.menu-btn-delete-item:hover {
-    background-color: #ffeaea;
-    color: #ff3b30; /* Rot für Löschen */
+    color: #ff3b30; /* Rot */
 }
-/* --- ENDE: Bubble-Styling & Menü --- */
+/* ENDE: Stift/Papierkorb-Buttons */
 
-
-/* 8. Speicher-Button (Bestehender Stil) */
+/* 8. Speichern-Button (Bestehend) */
 .modal-save-button { 
     background-color: #34c759; color: white; border: none; 
     padding: 0.85rem; border-radius: 25px; cursor: pointer; 
@@ -310,13 +398,42 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 .modal-save-button:hover { 
-    background-color: #2a9E48; transform: translateY(-1px); 
+    background-color: #2a9E48; 
+    transform: translateY(-1px); 
     box-shadow: 0 4px 10px rgba(52, 199, 89, 0.3); 
 }
-/* --- ENDE: Modernes Erstellen-Modal --- */
+/* ENDE: Modernes Erstellen-Modal */
 
 
-/* --- Filter-Modal Stile (Bestehend, aber nutzt Tag-Pillen) --- */
+/* --- Stile für Filter-Modal (NEUE TAGS) --- */
 #filter-modal .rating-group { justify-content: center; }
 .clear-filter-btn { background: none; border: none; color: #007aff; cursor: pointer; font-size: 0.8rem; padding: 0; margin-top: -0.75rem; margin-bottom: 1rem; }
 .clear-filter-btn:hover { text-decoration: underline; }
+
+/* Die Tag-Pillen im Filter-Modal */
+#filter-tag-group {
+    background-color: transparent;
+    border: none;
+    padding: 0;
+}
+#filter-tag-list-label {
+    margin-bottom: 0.5rem; /* Abstand zur Liste */
+}
+/* Statische Pille im Filter-Modal (nutzt .active-filter-pill) */
+#filter-tag-group .active-filter-pill {
+    background-color: #fff;
+    border: 1.5px solid var(--tag-color-default);
+    color: var(--tag-color-default);
+    cursor: pointer;
+}
+#filter-tag-group .active-filter-pill:hover {
+    background-color: #f5f5f5;
+}
+/* Pille im Filter-Modal, wenn sie ausgewählt ist */
+#filter-tag-group .active-filter-pill.active {
+    background-color: var(--tag-color-default);
+    color: white;
+}
+#filter-tag-group .active-filter-pill[data-tag="Laktosefrei"].active {
+    color: #000;
+}
