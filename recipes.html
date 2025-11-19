@@ -1,4 +1,3 @@
-<!-- V2 - Diese Datei ist neu, um Cache-Probleme zu beheben -->
 <!DOCTYPE html>
 <html lang="de">
 <head>
@@ -15,7 +14,6 @@
         <p>Wir laden deine Rezepte</p>
     </div>
 
-    <!-- Navbar (unverändert) -->
     <header class="navbar content-hidden">
         <div class="navbar-container">
             <span class="navbar-brand">Flavour Lab</span>
@@ -40,8 +38,6 @@
             </li>
         </ul>
     </nav>
-    <!-- Ende Navbar -->
-    
     <main class="main-content content-hidden">
         <div class="recipe-container">
             <a href="dashboard.html" class="back-link">Zurück zu den Kochbüchern</a>
@@ -64,11 +60,6 @@
         </div>
     </main>
 
-    <!-- 
-      *************************************************
-      * START: "Rezept erstellen"-Modal (NEUE TAGS) *
-      *************************************************
-    -->
     <div id="create-recipe-modal" class="modal-overlay modal-hidden">
         <div class="modal-content">
             <span id="create-modal-close-btn" class="modal-close">&times;</span>
@@ -77,30 +68,42 @@
             <div class="modal-scrollable-content">
                 <div id="new-recipe-form" class="modal-form">
                     
-                    <!-- 1. Rezeptname -->
                     <label for="modal-recipe-name">Rezeptname</label>
                     <input type="text" id="modal-recipe-name" placeholder="z.B. Grüner Smoothie">
                     
-                    <!-- 2. Bild-URL -->
-                    <label for="modal-recipe-image">Bild</label>
-                    <div class="image-input-wrapper">
-                        <span class="image-input-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                <path d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757a4.5 4.5 0 0 1 6.364 0l-1.757 1.757a2.5 2.5 0 0 0-3.536-3.536l-1.757-1.757a4.5 4.5 0 0 1 6.364 6.364l-4.5 4.5a2.5 2.5 0 0 0-3.536-3.536l1.757-1.757a.5.5 0 0 1 .708 0z"/>
-                            </svg>
-                        </span>
-                        <input type="text" id="modal-recipe-image" placeholder="https://beispiel.com/smoothie.jpg">
-                        <div class="image-source-dropdown">
-                            <button type="button" class="image-source-btn">
-                                Link
-                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                    <label>Bild</label>
+                    <div class="image-mode-tabs">
+                        <button type="button" class="image-mode-btn active" data-mode="auto">Automatisch</button>
+                        <button type="button" class="image-mode-btn" data-mode="link">Link</button>
+                        <button type="button" class="image-mode-btn" data-mode="upload">Eigener Upload</button>
+                    </div>
+
+                    <div id="image-mode-auto-content" class="image-mode-panel">
+                        <p class="image-mode-info">Es wird automatisch ein zufälliges, passendes Bild von Unsplash basierend auf deinem Rezeptnamen ausgewählt.</p>
+                    </div>
+
+                    <div id="image-mode-link-content" class="image-mode-panel" style="display: none;">
+                        <div class="image-input-wrapper">
+                            <span class="image-input-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757a4.5 4.5 0 0 1 6.364 0l-1.757 1.757a2.5 2.5 0 0 0-3.536-3.536l-1.757-1.757a4.5 4.5 0 0 1 6.364 6.364l-4.5 4.5a2.5 2.5 0 0 0-3.536-3.536l1.757-1.757a.5.5 0 0 1 .708 0z"/>
                                 </svg>
-                            </button>
+                            </span>
+                            <input type="text" id="modal-recipe-image" placeholder="https://beispiel.com/smoothie.jpg">
+                            <div class="image-source-dropdown">
+                                <button type="button" class="image-source-btn">
+                                    Suchen
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- 3. Portionen -->
+                    <div id="image-mode-upload-content" class="image-mode-panel" style="display: none;">
+                        <p class="image-mode-info">Der Datei-Upload ist in Kürze verfügbar.</p>
+                    </div>
                     <div class="form-group">
                         <label for="modal-servings-select">Portionen</label>
                         <div class="servings-group" id="modal-servings-select">
@@ -128,7 +131,6 @@
                         </div>
                     </div>
 
-                    <!-- 4. Bewertung -->
                     <div class="form-group">
                         <label>Bewertung</label>
                         <div class="rating-group" id="modal-recipe-rating">
@@ -140,66 +142,40 @@
                         </div>
                     </div>
 
-                    <!-- 
-                      *************************************************
-                      * NEUE TAG-SEKTION (ersetzt die alte) *
-                      *************************************************
-                    -->
-                    <label for="modal-tag-input">Tags</label>
-                    <!-- Zeigt die für DIESES Rezept ausgewählten Tags -->
-                    <div id="selected-tags-container" class="tag-pill-container">
-                        <!-- Ausgewählte Tags werden hier von JS eingefügt -->
+                    <label>Tags (Optional)</label>
+                    <div class="tag-selection-group" id="modal-tag-selection">
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Vegan">Vegan</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Vegetarisch">Vegetarisch</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Glutenfrei">Glutenfrei</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Laktosefrei">Laktosefrei</button>
+                        <button type="button" class="tag-btn tag-btn-pille data-tag="Schnell">Schnell</button>
                     </div>
-                    
-                    <!-- Eingabefeld zum Erstellen neuer Tags -->
-                    <div class="tag-input-group">
-                        <input type="text" id="modal-tag-input" placeholder="Neuen Tag erstellen...">
-                        <button type="button" id="btn-add-tag">+</button>
-                    </div>
-                    
-                    <!-- Zeigt alle VORHANDENEN Tags als Vorschläge -->
-                    <label id="user-tag-list-label" style="display: none;">Vorschläge</labe>
-                    <div id="user-tag-list" class="tag-pill-container suggestions">
-                         <!-- Vorschläge werden hier von JS eingefügt -->
-                    </div>
-                    <!-- ENDE NEUE TAG-SEKTION -->
 
-
-                    <!-- 6. Zutaten -->
                     <label for="modal-ingredient-input">Zutaten</label>
                     <div class="ingredient-input-group">
                         <input type="text" id="modal-ingredient-input" placeholder="z.B. 1 Banane">
                         <button type="button" id="btn-add-ingredient">+</button>
                     </div>
                     <ul id="ingredient-list">
-                        <!-- Inhalt wird von JS generiert -->
-                    </ul>
+                        </ul>
                     
-                    <!-- 7. Zubereitungsschritte -->
                     <label for="modal-step-input">Zubereitung</label>
                     <div class="step-input-group">
                         <input type="text" id="modal-step-input" placeholder="z.B. Banane schälen">
                         <button type="button" id="btn-add-step">+</button>
                     </div>
                     <ol id="step-list">
-                        <!-- Inhalt wird von JS generiert -->
-                    </ol>
+                        </ol>
                     
-                    <!-- 8. Notizen -->
                     <label for="modal-recipe-notes">Notizen & Tipps (Optional)</label>
                     <textarea id="modal-recipe-notes" placeholder="z.B. Schmeckt am besten mit..."></textarea>
                 
                 </div>
             </div>
             
-            <!-- 9. Speicher-Button -->
             <button id="btn-save-recipe" class="modal-save-button">Rezept hochladen</button>
         </div>
     </div>
-    <!-- ENDE: "Rezept erstellen"-Modal -->
-
-
-    <!-- "Rezept anzeigen"-Modal (unverändert) -->
     <div id="view-recipe-modal" class="modal-overlay modal-hidden">
         <div class="modal-content">
             <span id="view-modal-close-btn" class="modal-close">&times;</span>
@@ -214,11 +190,6 @@
         </div>
     </div>
     
-    <!-- 
-      *************************************************
-      * Filter-Modal (NEUE Tag-Gruppe) *
-      *************************************************
-    -->
     <div id="filter-modal" class="modal-overlay modal-hidden">
         <div class="modal-content">
             <span id="filter-modal-close-btn" class="modal-close">&times;</span>
@@ -227,7 +198,6 @@
                 <div class="modal-form">
                     <label for="filter-search-input">Suche nach Name</label>
                     <input type="text" id="filter-search-input" placeholder="z.B. Smoothie">
-                    
                     <label>Mindest-Bewertung</label>
                     <div class="rating-group" id="filter-rating-group">
                         <span class="rating-star" data-value="1"></span>
@@ -237,11 +207,13 @@
                         <span class="rating-star" data-value="5"></span>
                     </div>
                     <button type="button" id="clear-rating-filter" class="clear-filter-btn">Bewertung zurücksetzen</button>
-                    
-                    <!-- NEU: Dynamischer Tag-Filter-Container -->
-                    <label id="filter-tag-list-label">Tags (Mehrfachauswahl)</label>
-                    <div id="filter-tag-group" class="tag-selection-group">
-                        <!-- Wird jetzt von JS gefüllt -->
+                    <label>Tags (Mehrfachauswahl)</label>
+                    <div class="tag-selection-group" id="filter-tag-group">
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Vegan">Vegan</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Vegetarisch">Vegetarisch</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Glutenfrei">Glutenfrei</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Laktosefrei">Laktosefrei</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Schnell">Schnell</button>
                     </div>
                 </div>
             </div>
@@ -249,16 +221,13 @@
         </div>
     </div>
     
-    <!-- Skripte (unverändert) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script type="module" src="./firebase-config.js"></script>
     
-    <!-- WICHTIG: Diese JS-Datei ist NEU/GEÄNDERT -->
     <script type="module" src="./recipes.js"></script>
     
-    <!-- Navigations-Skript (unverändert) -->
     <script type="module">
       import { auth, db } from './firebase-config.js';
       let invitationListener = null;
