@@ -5,6 +5,11 @@ import { auth } from './firebase-config.js';
 import * as state from './recipe.state.js';
 import * as ui from './recipe.ui.js';
 import * as service from './recipe.service.js';
+// NEU: Kochmodus importieren
+import * as cookingMode from './cooking.mode.js';
+
+// Cloud Functions Referenz holen
+const functions = firebase.app().functions('europe-west3');
 
 // --- Event-Handler (Die "Was passiert wenn..." Logik) ---
 
@@ -67,10 +72,7 @@ async function handleDeleteRecipeClick() {
 }
 
 
-// *** GEÄNDERT: Geht wie gewünscht zurück zur Google-Suche ***
-/**
- * Öffnet Google Images in einem neuen Tab (für den "Link"-Modus).
- */
+// Öffnet Google Images in einem neuen Tab
 function handleFindImageClick(e) {
     e.preventDefault();
     
@@ -81,19 +83,128 @@ function handleFindImageClick(e) {
         return;
     }
 
-    // Baut die Such-URL für Google Images
     const query = encodeURIComponent(title);
     const url = `https://www.google.com/search?tbm=isch&q=${query}`;
-
-    // Öffnet die Suche in einem neuen Tab
     window.open(url, '_blank');
-    
     ui.elements.modalRecipeImage.focus();
-    alert('Google Bilder wurde im neuen Tab geöffnet.\n\nKopiere die Bild-URL (Rechtsklick -> "Bildadresse kopieren") und füge sie hier ein.');
 }
 
-// Klick auf "Rezept speichern" (Erstellen oder Bearbeiten)
-// *** STARK GEÄNDERT: Prüft jetzt den Image-Mode ***
+
+// --- Import-Logik (Option B) ---
+
+function handleOpenImportModal() {
+    const modal = document.getElementById('import-modal');
+    const input = document.getElementById('import-url-input');
+    const msg = document.getElementById('import-status-message');
+    
+    input.value = '';
+    msg.textContent = '';
+    modal.classList.remove('modal-hidden');
+    input.focus();
+}
+
+function handleCloseImportModal() {
+    document.getElementById('import-modal').classList.add('modal-hidden');
+}
+
+async function handleStartImport() {
+    const urlInput = document.getElementById('import-url-input');
+    const msg = document.getElementById('import-status-message');
+    const url = urlInput.value.trim();
+
+    if (!url) {
+        msg.textContent = "Bitte gib eine URL ein.";
+        msg.style.color = "red";
+        return;
+    }
+
+    msg.textContent = "Lade Rezeptdaten... (Das kann kurz dauern)";
+    msg.style.color = "#555";
+    
+    const btn = document.getElementById('btn-start-import');
+    btn.disabled = true;
+
+    try {
+        // Cloud Function aufrufen
+        const fetchRecipeFunction = functions.httpsCallable('fetchRecipeFromUrl');
+        const result = await fetchRecipeFunction({ url: url });
+        const data = result.data;
+
+        console.log("Importierte Daten:", data);
+
+        // Import-Modal schließen
+        handleCloseImportModal();
+
+        // Erstellen-Modal öffnen (Option B - Vorbefüllen)
+        state.resetModalState(); // Erst alles leeren
+        ui.openCreateModal(); // Modal öffnen
+
+        // Felder befüllen
+        ui.elements.modalRecipeName.value = data.title || "";
+        
+        // Bild setzen
+        if (data.imageUrl) {
+            ui.elements.modalRecipeImage.value = data.imageUrl;
+            ui.setImageModeUI('link'); // Auf "Link"-Tab wechseln
+        }
+
+        // Zutaten befüllen
+        if (data.ingredients && Array.isArray(data.ingredients)) {
+            state.setIngredients(data.ingredients);
+            ui.renderIngredientList();
+        }
+
+        // Schritte befüllen
+        if (data.instructions && Array.isArray(data.instructions)) {
+            state.setSteps(data.instructions);
+            ui.renderStepsList();
+        }
+
+        // Portionen befüllen
+        if (data.servings) {
+            ui.setServings(null); // Custom aktivieren
+            ui.elements.customServingInput.value = data.servings;
+            state.setServings(data.servings);
+        }
+        
+        // Notiz: Quelle hinzufügen
+        ui.elements.modalRecipeNotes.value = `Importiert von: ${data.url}`;
+
+    } catch (error) {
+        console.error("Import Fehler:", error);
+        msg.textContent = "Fehler: " + error.message;
+        msg.style.color = "red";
+    } finally {
+        btn.disabled = false;
+    }
+}
+
+// ------------------------------------
+
+// NEU: Handler für den Kochmodus Button
+async function handleStartCookingClick() {
+    const recipeId = state.state.currentRecipeId;
+    if (!recipeId) return;
+
+    try {
+        // Wir holen die Daten frisch oder nehmen sie aus dem State, falls vorhanden.
+        // Da wir im View-Modal sind, sollten die Daten eigentlich da sein, aber
+        // zur Sicherheit holen wir sie via Service (der hat Caching-Logik evtl?)
+        // Einfacher: Wir rufen fetchRecipeForView nochmal auf (ist cached meistens)
+        // oder wir greifen auf ein gespeichertes Objekt zu.
+        
+        const recipeData = await service.fetchRecipeForView(recipeId);
+        
+        // Modul starten
+        cookingMode.startCookingMode(recipeData);
+
+    } catch (error) {
+        alert("Konnte Kochmodus nicht starten: " + error.message);
+    }
+}
+
+
+// Klick auf "Rezept speichern"
 async function handleSaveRecipeClick() {
     const title = ui.elements.modalRecipeName.value.trim();
     if (!title) { alert('Bitte gib einen Rezeptnamen ein.'); return; }
@@ -113,26 +224,19 @@ async function handleSaveRecipeClick() {
         return;
     }
 
-    // *** NEUE BILD-LOGIK ***
     let imageUrl = '';
     const imageMode = state.state.currentImageMode;
 
     if (imageMode === 'auto') {
-        // "Automatisch": Baut eine Unsplash Source URL
-        // Ersetzt Leerzeichen durch Kommas für bessere Suchergebnisse
         const query = encodeURIComponent(title.split(' ').join(','));
         imageUrl = `https://source.unsplash.com/featured/800x600/?${query}`;
     } 
     else if (imageMode === 'link') {
-        // "Link": Nimmt den Wert aus dem Input-Feld
         imageUrl = ui.elements.modalRecipeImage.value.trim();
     } 
     else if (imageMode === 'upload') {
-        // "Upload": Platzhalter für die Zukunft
-        imageUrl = ''; // (Oder eine Standard-URL)
+        imageUrl = ''; 
     }
-    // *** ENDE BILD-LOGIK ***
-
 
     const selectedTags = [];
     if (ui.elements.tagSelectionGroup) {
@@ -143,7 +247,7 @@ async function handleSaveRecipeClick() {
 
     const recipeData = {
         title: title,
-        imageUrl: imageUrl, // Verwendet die neue 'imageUrl' Variable
+        imageUrl: imageUrl, 
         ingredients: state.state.ingredientsArray,
         instructions: state.state.stepsArray,
         notes: notes,
@@ -167,8 +271,8 @@ function handleAddIngredient() {
     const ingredient = ui.elements.ingredientInput.value.trim();
     if (!ingredient) return;
     
-    state.addIngredient(ingredient); // Status aktualisieren
-    ui.renderIngredientList();       // UI neu rendern
+    state.addIngredient(ingredient); 
+    ui.renderIngredientList();       
     ui.elements.ingredientInput.value = '';
     ui.elements.ingredientInput.focus();
 }
@@ -181,11 +285,11 @@ function handleIngredientListClick(e) {
     const index = Number(btn.dataset.index);
     if (btn.classList.contains('menu-btn-delete-item')) {
         state.removeIngredient(index);
-        ui.renderIngredientList(); // UI neu rendern
+        ui.renderIngredientList(); 
     }
     if (btn.classList.contains('menu-btn-edit-item')) {
         state.setEditIngredient(index);
-        ui.startEditIngredient(index); // UI-Funktion
+        ui.startEditIngredient(index); 
     }
 }
 
@@ -193,8 +297,8 @@ function handleAddStep() {
     const step = ui.elements.stepInput.value.trim();
     if (!step) return;
 
-    state.addStep(step);       // Status aktualisieren
-    ui.renderStepsList();      // UI neu rendern
+    state.addStep(step);       
+    ui.renderStepsList();      
     ui.elements.stepInput.value = '';
     ui.elements.stepInput.focus();
 }
@@ -207,11 +311,11 @@ function handleStepListClick(e) {
     const index = Number(btn.dataset.index);
     if (btn.classList.contains('menu-btn-delete-item')) {
         state.removeStep(index);
-        ui.renderStepsList(); // UI neu rendern
+        ui.renderStepsList(); 
     }
     if (btn.classList.contains('menu-btn-edit-item')) {
         state.setEditStep(index);
-        ui.startEditStep(index); // UI-Funktion
+        ui.startEditStep(index); 
     }
 }
 
@@ -227,9 +331,9 @@ function handleApplyFilters() {
         tags.push(btn.dataset.tag);
     });
 
-    state.setFilters(search, rating, tags); // Status aktualisieren
-    ui.renderFilteredRecipes();             // UI aktualisieren
-    ui.displayActiveFilters();              // UI aktualisieren
+    state.setFilters(search, rating, tags); 
+    ui.renderFilteredRecipes();             
+    ui.displayActiveFilters();              
     ui.closeFilterModal();
 }
 
@@ -247,14 +351,12 @@ function handleActiveFilterClick(e) {
         state.removeFilter(type, value);
     }
     
-    // Nach jedem Klick (löschen oder alle löschen) neu rendern
     ui.renderFilteredRecipes();
     ui.displayActiveFilters();
 }
 
 // --- Hilfs-Handler ---
 
-// Wrapper, um das Laden der Rezepte zu kapseln
 async function handleLoadRecipes() {
     if (!state.state.currentUser || !state.state.currentCookbookId) return;
     
@@ -270,7 +372,6 @@ async function handleLoadRecipes() {
         ui.elements.galleryMessage.textContent = 'Ein Fehler ist aufgetreten.';
     }
     
-    // Nach dem Laden immer die (gefilterte) UI neu rendern
     ui.renderFilteredRecipes();
     ui.displayActiveFilters();
 }
@@ -286,28 +387,48 @@ function attachEventListeners() {
     ui.elements.recipeModalCloseBtn?.addEventListener('click', ui.closeRecipeModal);
     ui.elements.recipeModal?.addEventListener('click', (e) => { if (e.target === ui.elements.recipeModal) ui.closeRecipeModal(); });
     
-    // *** NEUER LISTENER FÜR BILD-TABS ***
+    // Bild-Tabs
     ui.elements.imageModeTabs?.addEventListener('click', (e) => {
         const button = e.target.closest('.image-mode-btn');
         if (!button) return;
-        
         const mode = button.dataset.mode;
-        if (mode === 'upload') {
-            e.preventDefault(); // Verhindert Klick auf "Upload"
-            return;
-        }
-        
-        ui.setImageModeUI(mode); // UI-Funktion aktualisiert State + UI
+        if (mode === 'upload') { e.preventDefault(); return; }
+        ui.setImageModeUI(mode); 
     });
     
-    // Listener für "Suchen"-Button (im "Link"-Tab)
     ui.elements.findImageBtn?.addEventListener('click', handleFindImageClick);
 
-    // Ansicht-Modal
-    ui.elements.deleteRecipeBtn?.addEventListener('click', handleDeleteRecipeClick);
+    // --- Menü-Logik für Ansicht-Modal ---
+    
+    const menuTrigger = document.getElementById('btn-recipe-menu-trigger');
+    const dropdown = document.getElementById('recipe-dropdown-menu');
+    
+    if (menuTrigger && dropdown) {
+        menuTrigger.addEventListener('click', (e) => {
+            e.stopPropagation(); 
+            dropdown.classList.toggle('hidden');
+        });
+        document.addEventListener('click', (e) => {
+            if (!dropdown.classList.contains('hidden')) {
+                if (!dropdown.contains(e.target) && !menuTrigger.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            }
+        });
+        dropdown.addEventListener('click', () => {
+             dropdown.classList.add('hidden');
+        });
+    }
+    
+    // Buttons im Ansicht-Modal
+    document.getElementById('btn-delete-recipe')?.addEventListener('click', handleDeleteRecipeClick);
+    document.getElementById('btn-edit-recipe')?.addEventListener('click', handleEditRecipeClick);
+    
+    // NEU: Button für Kochmodus
+    document.getElementById('btn-start-cooking')?.addEventListener('click', handleStartCookingClick);
+
     ui.elements.viewModalCloseBtn?.addEventListener('click', ui.closeViewModal);
     ui.elements.viewModal?.addEventListener('click', (e) => { if (e.target === ui.elements.viewModal) ui.closeViewModal(); });
-    ui.elements.editRecipeBtn?.addEventListener('click', handleEditRecipeClick);
     
     // Zutaten-Liste
     ui.elements.addIngredientBtn?.addEventListener('click', handleAddIngredient);
@@ -351,7 +472,6 @@ function attachEventListeners() {
     ui.elements.applyFilterBtn?.addEventListener('click', handleApplyFilters);
     ui.elements.activeFiltersDisplay?.addEventListener('click', handleActiveFilterClick);
     
-    // Filter-Bewertung (hat eigene Logik)
     if (ui.elements.filterRatingStars) {
         let currentFilterRating = 0;
         ui.elements.filterRatingStars.forEach(star => {
@@ -370,11 +490,21 @@ function attachEventListeners() {
         });
     }
     
-    // Filter-Tags
     ui.elements.filterTagGroup?.addEventListener('click', (e) => {
         const btn = e.target.closest('.tag-btn');
         if (btn) { e.preventDefault(); btn.classList.toggle('active'); }
     });
+
+    // Import Button Listener
+    const openImportBtn = document.getElementById('btn-open-import');
+    const closeImportBtn = document.getElementById('import-modal-close-btn');
+    const startImportBtn = document.getElementById('btn-start-import');
+    const importModal = document.getElementById('import-modal');
+
+    if(openImportBtn) openImportBtn.addEventListener('click', handleOpenImportModal);
+    if(closeImportBtn) closeImportBtn.addEventListener('click', handleCloseImportModal);
+    if(startImportBtn) startImportBtn.addEventListener('click', handleStartImport);
+    if(importModal) importModal.addEventListener('click', (e) => { if(e.target === importModal) handleCloseImportModal(); });
 }
 
 // --- Haupt-Initialisierungsfunktion ---
@@ -395,15 +525,13 @@ async function init() {
         if (user) {
             state.setCurrentUser(user);
             if (state.state.currentCookbookId) {
-                // Lade Titel und Rezepte parallel
                 const titlePromise = service.loadCookbookDetails(user.uid, state.state.currentCookbookId);
-                const recipesPromise = handleLoadRecipes(); // Diese Funktion lädt UND rendert
+                const recipesPromise = handleLoadRecipes(); 
                 
-                // Warte auf Titel, dann setze ihn
                 const title = await titlePromise;
                 ui.setCookbookTitle(title);
                 
-                await recipesPromise; // Stelle sicher, dass Rezepte fertig geladen sind
+                await recipesPromise; 
             }
             ui.showContent();
         } else {

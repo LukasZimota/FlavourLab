@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rezepte - Meine Rezepte</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="recipes.css"> 
 </head>
 <body>
 
@@ -21,7 +20,7 @@
                 <span></span>
                 <span></span>
                 <span></span>
-                <span id="nav-toggle-notification" class_name="nav-toggle-notification-dot notification-dot-hidden"></span>
+                <span id="nav-toggle-notification" class="nav-toggle-notification-dot notification-dot-hidden"></span>
             </button>
         </div>
     </header>
@@ -44,21 +43,44 @@
             
             <div class="recipe-header">
                 <h2 id="cookbook-title">Lade Kochbuch...</h2>
-                <button id="open-filter-btn" class="filter-open-btn" title="Filtern & Suchen">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-                    </svg>
-                </button>
+                
+                <div class="header-actions">
+                    <button id="btn-open-import" class="icon-btn" title="Rezept importieren">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/>
+                            <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708z"/>
+                        </svg>
+                    </button>
+
+                    <button id="open-filter-btn" class="icon-btn" title="Filtern & Suchen">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div id="active-filters-display" class="active-filters-container">
-                </div>
+            </div>
             
             <p id="recipe-gallery-message" class="message"></p>
             <div id="recipe-gallery">
-                </div>
+            </div>
         </div>
     </main>
+
+    <div id="import-modal" class="modal-overlay modal-hidden">
+        <div class="modal-content modal-small">
+            <span id="import-modal-close-btn" class="modal-close">&times;</span>
+            <h3>Rezept importieren</h3>
+            <p>Füge einen Link von Chefkoch, Lecker.de o.ä. ein.</p>
+            <div class="modal-form">
+                <input type="url" id="import-url-input" placeholder="https://www.chefkoch.de/rezepte/..." required>
+                <button type="button" id="btn-start-import">Importieren</button>
+                <p id="import-status-message" class="message" style="margin-top:0.5rem; min-height:1.2em;"></p>
+            </div>
+        </div>
+    </div>
 
     <div id="create-recipe-modal" class="modal-overlay modal-hidden">
         <div class="modal-content">
@@ -67,7 +89,6 @@
             
             <div class="modal-scrollable-content">
                 <div id="new-recipe-form" class="modal-form">
-                    
                     <label for="modal-recipe-name">Rezeptname</label>
                     <input type="text" id="modal-recipe-name" placeholder="z.B. Grüner Smoothie">
                     
@@ -91,40 +112,20 @@
                             </span>
                             <input type="text" id="modal-recipe-image" placeholder="https://beispiel.com/smoothie.jpg">
                             <div class="image-source-dropdown">
-                                <button type="button" class="image-source-btn">
-                                    Suchen
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-                                    </svg>
-                                </button>
+                                <button type="button" class="image-source-btn">Suchen <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/></svg></button>
                             </div>
                         </div>
                     </div>
-
                     <div id="image-mode-upload-content" class="image-mode-panel" style="display: none;">
                         <p class="image-mode-info">Der Datei-Upload ist in Kürze verfügbar.</p>
                     </div>
+
                     <div class="form-group">
                         <label for="modal-servings-select">Portionen</label>
                         <div class="servings-group" id="modal-servings-select">
-                            <button type="button" class="serving-btn" data-value="1">
-                                1
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                </svg>
-                            </button>
-                            <button type="button" class="serving-btn" data-value="2">
-                                2
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                </svg>
-                            </button>
-                            <button type="button" class="serving-btn active" data-value="4">
-                                4
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                    <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/>
-                                </svg>
-                            </button>
+                            <button type="button" class="serving-btn" data-value="1">1</button>
+                            <button type="button" class="serving-btn" data-value="2">2</button>
+                            <button type="button" class="serving-btn active" data-value="4">4</button>
                             <div class="serving-custom-wrapper">
                                 <input type="number" id="modal-serving-custom" placeholder="Eigene" min="1" class="serving-custom-input">
                             </div>
@@ -134,11 +135,7 @@
                     <div class="form-group">
                         <label>Bewertung</label>
                         <div class="rating-group" id="modal-recipe-rating">
-                            <span class="rating-star" data-value="1"></span>
-                            <span class="rating-star" data-value="2"></span>
-                            <span class="rating-star" data-value="3"></span>
-                            <span class="rating-star" data-value="4"></span>
-                            <span class="rating-star" data-value="5"></span>
+                            <span class="rating-star" data-value="1"></span><span class="rating-star" data-value="2"></span><span class="rating-star" data-value="3"></span><span class="rating-star" data-value="4"></span><span class="rating-star" data-value="5"></span>
                         </div>
                     </div>
 
@@ -148,7 +145,7 @@
                         <button type="button" class="tag-btn tag-btn-pille" data-tag="Vegetarisch">Vegetarisch</button>
                         <button type="button" class="tag-btn tag-btn-pille" data-tag="Glutenfrei">Glutenfrei</button>
                         <button type="button" class="tag-btn tag-btn-pille" data-tag="Laktosefrei">Laktosefrei</button>
-                        <button type="button" class="tag-btn tag-btn-pille data-tag="Schnell">Schnell</button>
+                        <button type="button" class="tag-btn tag-btn-pille" data-tag="Schnell">Schnell</button>
                     </div>
 
                     <label for="modal-ingredient-input">Zutaten</label>
@@ -156,36 +153,46 @@
                         <input type="text" id="modal-ingredient-input" placeholder="z.B. 1 Banane">
                         <button type="button" id="btn-add-ingredient">+</button>
                     </div>
-                    <ul id="ingredient-list">
-                        </ul>
+                    <ul id="ingredient-list"></ul>
                     
                     <label for="modal-step-input">Zubereitung</label>
                     <div class="step-input-group">
                         <input type="text" id="modal-step-input" placeholder="z.B. Banane schälen">
                         <button type="button" id="btn-add-step">+</button>
                     </div>
-                    <ol id="step-list">
-                        </ol>
+                    <ol id="step-list"></ol>
                     
                     <label for="modal-recipe-notes">Notizen & Tipps (Optional)</label>
                     <textarea id="modal-recipe-notes" placeholder="z.B. Schmeckt am besten mit..."></textarea>
-                
                 </div>
             </div>
-            
             <button id="btn-save-recipe" class="modal-save-button">Rezept hochladen</button>
         </div>
     </div>
+    
     <div id="view-recipe-modal" class="modal-overlay modal-hidden">
         <div class="modal-content">
             <span id="view-modal-close-btn" class="modal-close">&times;</span>
-            <div class="modal-scrollable-content">
-                <div id="view-recipe-content">
+            <div class="recipe-menu-container">
+                <button id="btn-recipe-menu-trigger" class="icon-btn-transparent" title="Optionen">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                    </svg>
+                </button>
+                <div id="recipe-dropdown-menu" class="recipe-dropdown hidden">
+                    <button id="btn-edit-recipe" class="dropdown-item"><span class="icon">✏️</span> Bearbeiten</button>
+                    <button id="btn-delete-recipe" class="dropdown-item delete"><span class="icon">🗑️</span> Löschen</button>
                 </div>
             </div>
-            <div class="recipe-modal-actions">
-                <button id="btn-edit-recipe" class="btn-edit">Bearbeiten</button>
-                <button id="btn-delete-recipe" class="btn-delete btn-delete-recipe">Löschen</button>
+
+            <div class="modal-scrollable-content">
+                <div id="view-recipe-content"></div>
+            </div>
+
+            <div class="modal-bottom-actions">
+                <button id="btn-start-cooking" class="start-cooking-btn">
+                    👨‍🍳 Kochmodus starten
+                </button>
             </div>
         </div>
     </div>
@@ -200,11 +207,7 @@
                     <input type="text" id="filter-search-input" placeholder="z.B. Smoothie">
                     <label>Mindest-Bewertung</label>
                     <div class="rating-group" id="filter-rating-group">
-                        <span class="rating-star" data-value="1"></span>
-                        <span class="rating-star" data-value="2"></span>
-                        <span class="rating-star" data-value="3"></span>
-                        <span class="rating-star" data-value="4"></span>
-                        <span class="rating-star" data-value="5"></span>
+                        <span class="rating-star" data-value="1"></span><span class="rating-star" data-value="2"></span><span class="rating-star" data-value="3"></span><span class="rating-star" data-value="4"></span><span class="rating-star" data-value="5"></span>
                     </div>
                     <button type="button" id="clear-rating-filter" class="clear-filter-btn">Bewertung zurücksetzen</button>
                     <label>Tags (Mehrfachauswahl)</label>
@@ -220,12 +223,68 @@
             <button id="btn-apply-filters" class="modal-save-button">Filter anwenden</button>
         </div>
     </div>
+
+    <div id="cooking-mode-overlay" class="cooking-overlay hidden">
+        
+        <aside id="cooking-sidebar-left" class="cooking-sidebar left">
+            <div class="cooking-sidebar-header">
+                <h3>Zutaten</h3>
+                <button id="btn-close-left-mobile" class="mobile-sidebar-close">✕</button>
+            </div>
+            <ul id="cooking-ingredients-list"></ul>
+        </aside>
+
+        <main class="cooking-main">
+            <div class="cooking-header">
+                <button id="btn-toggle-ingredients" class="toggle-btn left" title="Zutaten ein/ausblenden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3.854 2.146a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 3.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708L2 7.293l1.146-1.147a.5.5 0 0 1 .708 0m0 4a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 0 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0"/>
+                    </svg>
+                </button>
+                <div class="cooking-step-info">
+                    <span id="cooking-step-counter">Schritt 1 von X</span>
+                </div>
+                <button id="btn-toggle-notes" class="toggle-btn right" title="Notizen ein/ausblenden">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2z"/>
+                        <path d="M3 5.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 8m0 2.5a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5"/>
+                    </svg>
+                </button>
+                <button id="btn-close-cooking" class="close-cooking-btn" title="Beenden">✕</button>
+            </div>
+
+            <div class="step-content">
+                <p id="cooking-step-text">Schritt Text hier...</p>
+            </div>
+
+            <div class="cooking-controls">
+                <button id="btn-cooking-prev" class="nav-btn">← Zurück</button>
+                <button id="btn-cooking-next" class="nav-btn primary">Weiter →</button>
+            </div>
+
+            <div class="cooking-timer-widget">
+                <span class="timer-icon">⏲️</span>
+                <input type="number" id="cooking-timer-input" placeholder="Min" min="1" max="999">
+                <span id="cooking-timer-display" style="display:none;">00:00</span>
+                <button id="btn-cooking-timer-toggle">Start</button>
+            </div>
+        </main>
+
+        <aside id="cooking-sidebar-right" class="cooking-sidebar right">
+            <div class="cooking-sidebar-header">
+                <h3>Notizen</h3>
+                <button id="btn-close-right-mobile" class="mobile-sidebar-close">✕</button>
+            </div>
+            <textarea id="cooking-notes" placeholder="Deine Notizen zum Rezept..."></textarea>
+        </aside>
+    </div>
     
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+
     <script type="module" src="./firebase-config.js"></script>
-    
     <script type="module" src="./recipes.js"></script>
     
     <script type="module">
@@ -263,7 +322,6 @@
             .where("toUserId", "==", userId)
             .where("status", "==", "pending");
         invitationListener = invitesQuery.onSnapshot((snapshot) => {
-            console.log(`Notification-Check: ${snapshot.size} Einladungen gefunden.`);
             updateNotificationDots(!snapshot.empty);
         }, (error) => {
             console.error("Fehler im Benachrichtigungs-Listener:", error);
@@ -283,6 +341,5 @@
       });
       document.addEventListener('DOMContentLoaded', setupNavToggle);
     </script>
-
 </body>
 </html>
